@@ -1,0 +1,13 @@
+{
+  "title": "Locate the human being and the object involved in certain activity in the picture",
+  "description": "Locate the human being and the object involved in certain activity in the picture",
+  "keywords": "images, human beings, objects, locating, location, click, clicking",
+  "reward": 0.35,
+  "duration": 1000,
+  "frame_height": 1500,
+  "max_assignments": 3,
+  "country": "US",
+  "hits_approved": 1000,
+  "percent_approved": 95,
+  "adult_require": 1
+}

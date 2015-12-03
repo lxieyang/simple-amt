@@ -1,0 +1,530 @@
+<html>
+  <head>
+    <title>Locating human beings in images</title>
+    <!-- simpleamt depends on these libraries -->
+    <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js'></script>    
+    <!-- end of required libraries -->
+    <script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js'></script>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      #text-area {
+        margin: 10px 0;
+        font-size: 9pt;
+        height: 60px;
+      }
+      #button-div {
+        margin-bottom: 5px;
+      }
+      #counter {
+        margin: 0 10px;
+        font-size: 20pt;
+        font-weight: bold;
+      }
+      img {
+        height: 350px;
+      }
+    </style>
+    
+  </head>
+  <body onkeydown="keydown(event)">
+    <div class='container'>
+      <h2>Please circle out the human beings on this image.</h2>
+    </div>
+
+    <div><center><canvas id='segmentation_canvas' width=600 height=370></canvas></center></div>
+    
+    <div class='container-fluid'>
+      <div class='row'>
+        <div class='col-xs-4 col-xs-offset-4'>
+          <center><textarea id='text-area' class='form-control tb-margin' disabled></textarea></center>
+           <center><button id='reset-btn' class='btn btn-lg btn-primary' disabled>Reset</button></center>
+        </div>
+        <div>
+        </div>
+        <div class='col-xs-4 col-xs-offset-4 text-center' id='button-div'>
+          <button id='prev-btn' class='btn btn-lg btn-primary' disabled>Back</button>
+          <span id='counter'>
+            <span class='counter-top'></span> / <span class='counter-bottom'></span>
+          </span>
+          <button id='next-btn' class='btn btn-lg btn-primary' disabled>Next</button>
+        </div>
+      </div>
+    </div>
+
+    <script type='text/json' id='input'>
+  
+</script>
+<form id='results-form' method='post' action='dummy' class='text-center'>
+  <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+  <input type='hidden' value='' name='output' id='output'/>
+  <input type='submit' class='btn btn-lg btn-success' id='submit-btn' value='Submit' disabled/>          
+</form>
+<script>
+  var simpleamt = (function() {
+    
+    // Copied from http://james.padolsey.com/javascript/bujs-1-getparameterbyname/
+    function getUrlParam(name) {
+      var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+      return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
+    }
+
+    function getInput(default_input) {
+      if (typeof(default_input) === 'undefined') default_input = null;
+      try {
+        return JSON.parse($('#input').html());
+      } catch (e) {
+        return default_input;
+      }
+    }
+
+    function setOutput(output) {
+      $('#output').val(JSON.stringify(output));
+    }
+
+    function isPreview() {
+      var assignment_id = getUrlParam('assignmentId');
+      if (assignment_id === null) return false;
+      return assignment_id == 'ASSIGNMENT_ID_NOT_AVAILABLE';
+    }
+
+    function setupSubmit() {
+      var submit_to = getUrlParam('turkSubmitTo');
+      $('#results-form').attr('action', submit_to + '/mturk/externalSubmit');                      
+      $('#assignmentId').val(getUrlParam('assignmentId'));
+    }
+
+    return {
+      getInput: getInput,
+      setOutput: setOutput,
+      isPreview: isPreview,
+      setupSubmit: setupSubmit,
+    }
+
+  })();
+</script>
+
+    <script>
+        $(function() {
+      
+        // Define some default input.
+        var DEFAULT_INPUT = [
+          'http://www.flickeringmyth.com/wp-content/uploads/2015/06/terminator-genisys-photo-552bc861d9acb.jpg',
+          'http://static5.businessinsider.com/image/5591b19e371d2210008b50f8-3696-1848/gettyimages-457286444.jpg',
+          'http://static4.businessinsider.com/image/526f02b5ecad043f65237801/obama-is-giving-you-more-time-to-sign-up-for-health-insurance.jpg','http://1.bp.blogspot.com/-tuoSNZhLDJQ/UCxDuYacY6I/AAAAAAAAG4M/ja3iEFHvlIw/s1600/Cast+Away+Tom+Hanks+pic1.jpg',
+          'http://static3.businessinsider.com/image/50757596ecad04b97a000003/report-fox-is-already-calling-for-taken-3.jpg','http://manifest.rocks/wp-content/uploads/2014/09/jack-bauer-toilettes.gif',
+        ];
+
+        var input = null;
+
+        // Descriptions of images, parallel to input.
+        var descriptions = [];
+        var there_is_description = [];
+        var coordinates = [];
+
+        // Some variables to track state of the HIT.
+        var idx = 0;
+        var enabled = false;
+
+
+        var CANVAS_WIDTH  = 600;
+        var CANVAS_HEIGHT = 370;
+        
+        //global variables for the page
+        var img;
+        var canvas_fix;
+        var ctx;
+        
+        
+        //polygon coordinates
+        var x ;
+        var y ;
+        
+        
+        //current location
+        var cx=0;
+        var cy=0;
+        
+        var numpts = [];
+        
+        //tolerance radius
+        var tr=8;
+        
+        //drawing styles
+        var linecolor = "blue";
+        var linewidth = 4.0;
+        var pt_size   = 4.0;
+        var pt_color  = "black";
+        
+        // closed or open polygon
+        var polygon_is_closed = [];   // false for default
+        
+        // index of the point selected
+        var selected_idx;
+      
+        function init_canvas(){
+          img = new Image();
+          // polygon_is_closed = false;
+          
+          img.src = input[idx];
+          canvas_fix = document.getElementById('segmentation_canvas');
+          ctx = canvas_fix.getContext('2d');
+          //draw_canvas();
+          // render();
+          // draw_canvas();
+          canvas_fix.onmousemove = mousemove_canvas;
+          canvas_fix.onmousedown = mousedown_canvas;
+          canvas_fix.onmouseup = mouseup_canvas;
+          // img.onload = draw_image;
+          img.onload = draw_canvas;
+          // draw_image();
+          render();
+      }
+
+      // draw canvas
+			function draw_canvas(){
+				//draw the image
+				ctx.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+				draw_image();				
+				draw_polygon();
+			}
+
+      // fix this - wait to draw the image (see if this really works)
+			function draw_image(){
+				ctx.drawImage(img,0,0,CANVAS_WIDTH, CANVAS_HEIGHT);
+			}
+      
+      // reset the annotation
+			function reset_annotation(){
+				selected_idx[idx] = -1;
+				polygon_is_closed[idx] = false;
+        there_is_description[idx] = false;
+				x[idx] = new Array();
+				y[idx] = new Array();
+				numpts[idx] = 0;
+				// myFunction();
+				// draw_canvas();
+        init_canvas();
+			}
+
+        
+      // true if the point is close to the start
+			function is_close_to_start(){
+				if(numpts[idx] > 0){
+					var d2 = (cx-x[idx][0])*(cx-x[idx][0]) + (cy-y[idx][0])*(cy-y[idx][0]);
+					return d2 < tr*tr;
+				}else{
+					return false;
+				}
+			}
+      
+      // returns the index of the point close to the current one (within tr)
+			function get_closest_point_idx(){
+				var idxx = -1;
+				var min_dist = 100000000;
+				for(var i=0;i<numpts[idx];i++){
+					var d2 = (cx-x[idx][i])*(cx-x[idx][i]) + (cy-y[idx][i])*(cy-y[idx][i]);
+					if(d2 < min_dist){
+						min_dist = d2;
+						idxx = i;
+					}
+				}
+				if(min_dist < tr*tr)
+					return idxx;
+				else
+					return -1;
+			}
+        
+      function draw_current_point(r){
+        ctx.fillStyle = 'red';
+        ctx.fillRect(cx-r,cy-r,2*r,2*r);
+      }
+      
+      // draw the polygon 
+			function draw_polygon(){
+				ctx.strokeStyle = linecolor;
+				ctx.lineWidth = linewidth;
+				for(i = 0; i < numpts[idx]-1; i++){
+					ctx.beginPath();
+					ctx.moveTo(x[idx][i],y[idx][i]);
+					ctx.lineTo(x[idx][i+1],y[idx][i+1]);
+					ctx.stroke();
+					
+				}
+				for(i = 0; i < numpts[idx]; i++){
+					ctx.fillRect(x[idx][i]-pt_size,y[idx][i]-pt_size,2*pt_size,2*pt_size);
+				}
+				if(numpts[idx] > 0){
+					if(polygon_is_closed[idx]){
+						ctx.beginPath();
+						ctx.moveTo(x[idx][numpts[idx]-1],y[idx][numpts[idx]-1]);
+						ctx.lineTo(x[idx][0],y[idx][0]); // the current location
+						ctx.stroke();
+					}else{
+						ctx.beginPath();
+						ctx.moveTo(x[idx][numpts[idx]-1],y[idx][numpts[idx]-1]);
+						ctx.lineTo(cx,cy); // the current location
+						ctx.stroke();
+						if(is_close_to_start())
+						{
+							draw_current_point(2*pt_size);
+							// myFunction();
+						}
+						else
+						{
+							draw_current_point(pt_size);
+							// myFunction();
+						}
+					}
+				}
+				
+			}
+
+      function grab_xy(event){
+        var ev = event || window.event;
+        
+        var IE = document.all?true:false;
+        if (IE) { // grab the x-y pos if browser is IE
+          cx = ev.clientX + document.body.scrollLeft;
+          cy = ev.clientY + document.body.scrollTop;
+        }
+        else {  // grab the x-y pos if browser is NS
+          cx = ev.pageX;
+          cy = ev.pageY;
+        }  
+        cx = cx - canvas_fix.offsetLeft;
+        cy = cy - canvas_fix.offsetTop;
+        if (cx < 0){cx = 0;}
+        if (cy < 0){cy = 0;}
+        if (cx > CANVAS_WIDTH) {cx = CANVAS_WIDTH};
+        if (cy > CANVAS_HEIGHT){cy = CANVAS_HEIGHT};
+          
+        return [cx,cy];
+      }
+
+      function mouseup_canvas(event){
+				if(polygon_is_closed[idx]){
+					selected_idx[idx] = -1;
+          coordinates[idx] = get_results_string();
+          descriptions[idx] = "The points selected were: " + coordinates[idx];
+          there_is_description[idx] = true;
+          $('#text-area').val(descriptions[idx]);
+          
+				}else{
+						if(is_close_to_start()){
+						polygon_is_closed[idx] = true;
+						selected_idx[idx] = -1;
+            
+            coordinates[idx] = get_results_string();
+            descriptions[idx] = "The points selected were: " + coordinates[idx];
+            there_is_description[idx] = true;
+            $('#text-area').val(descriptions[idx]);
+          
+					}else{
+						var xy = grab_xy(event) 
+						x[idx][numpts[idx]] = xy[0];
+						y[idx][numpts[idx]] = xy[1];
+						numpts[idx] = numpts[idx] + 1;
+						draw_canvas();
+					}
+				}
+			}
+      
+      function mousedown_canvas(event){
+				selected_idx = get_closest_point_idx();
+			
+			}
+      
+      //update the current location of the keypoint
+			function mousemove_canvas(event){
+				var xy = grab_xy(event);
+				cx = xy[0];
+				cy = xy[1];
+				if(polygon_is_closed[idx] && selected_idx[idx] >= 0){
+					x[idx][selected_idx] = cx;
+					y[idx][selected_idx] = cy;
+				}
+				draw_canvas();
+			}
+      
+      //add a point to the list polygon
+			function onclick_canvas(event){
+				if(polygon_is_closed[idx])
+					return;
+				//close the polygon
+				if(is_close_to_start()){
+					polygon_is_closed[idx] = true;
+				}else{
+					var xy = grab_xy(event) 
+					x[idx][numpts[idx]] = xy[0];
+					y[idx][numpts[idx]] = xy[1];
+					numpts[idx] = numpts[idx] + 1;
+					draw_canvas();
+				}
+			}
+      
+      //keys to reset the annotation
+			function keydown(event) {
+				var key = String.fromCharCode(event.keyCode || event.which);
+				switch (key) {
+						case "R":
+						reset_annotation(); 
+						break;
+				}
+				draw_canvas();
+			}
+      
+      function get_results_string(){
+				// var result = category_name + "," + image_name;
+				// var result = "The points that made the polygon were: ";
+        var result = "";
+				for(var i = 0; i < numpts[idx]; i++){
+					result += " (" + x[idx][i] + ", " + y[idx][i] + ")";
+				}
+				return result;
+			}
+      
+      /*
+      function mousedown_canvas(event){
+        var xy = grab_xy(event);
+        cx = xy[0];
+        cy = xy[1];
+        
+        var coord = '(' + cx + ', ' + cy + ')';
+        var result = 'The point you selected is: ' + coord;
+       //  document.getElementById('demo').innerHTML = result;
+        descriptions[idx] = coord;
+        there_is_description[idx] = true;
+        $('#text-area').val(result);
+        draw_canvas();
+        draw_current_point(r);
+      }
+      */
+
+        // Use the current index to update the image and description
+        function render() {
+          // Set up the image
+          $('#image-container').empty();
+          $('<img>').attr('src', input[idx]).appendTo($('#image-container'));
+
+          // Set up the text area
+          if(there_is_description[idx] == false)
+          {
+              $('#text-area').val('No human beings have been circled.');
+          }
+          else{
+              $('#text-area').val(descriptions[idx]);
+          }
+          
+          // Refresh the counter
+          $('.counter-top').text(idx + 1);
+          $('.counter-bottom').text(input.length);
+
+          // If the UI is enabled, enable or disable the buttons depending on
+          // the index.
+          if (enabled) {
+            var prev_btn = $('#prev-btn');
+            var next_btn = $('#next-btn');
+            // var reset_btn = $('#reset-btn');
+            prev_btn.prop('disabled', true);
+            next_btn.prop('disabled', true);
+            // reset_btn.prop('disable', false);
+            if (idx > 0) {
+              prev_btn.prop('disabled', false);
+            }
+            if (idx < input.length - 1) next_btn.prop('disabled', false);
+            // getCoordinates();
+          }
+        }
+
+        // Update the index, and save the text in the text area.
+        function set_idx(new_idx) {
+          if (new_idx < 0 || new_idx >= input.length) return;
+          // descriptions[idx] = $('#text-area').val();
+
+          idx = new_idx;
+          init_canvas();
+          // render();
+        }
+
+        function main(){
+          input = simpleamt.getInput(DEFAULT_INPUT);
+
+          if (!simpleamt.isPreview()) {
+            enable_hit();
+          }
+          // enable_hit();
+
+          // Set up the descriptions.
+          _.each(input, function() { descriptions.push(''); });
+
+          _.each(input, function() {there_is_description.push(false);});
+          
+          _.each(input, function() {coordinates.push('')});
+          
+          _.each(input, function() {polygon_is_closed.push(false);});
+          
+          _.each(input, function() {numpts.push(0);});
+          
+          x = new Array(input.length);
+          y = new Array(input.length);
+          
+          var arr_length = 20;
+          
+          
+          for(var i = 0; i < input.length; i++)
+          {
+            x[i] = new Array(arr_length);
+            y[i] = new Array(arr_length);
+          }
+          
+          selected_idx = new Array(input.length);
+          
+          _.each(input, function() {selected_idx.push(-1);});
+
+          // Preload all images
+          var imgs = [];
+          _.each(input, function(img_url) {
+            var img = new Image();
+            img.onload = function() { console.log('loaded image from ' + img_url); };
+            img.src = img_url;
+          });
+
+          init_canvas();
+        }
+
+        // Enable the UI.
+        function enable_hit() {
+          enabled = true;
+
+
+          // Enable components
+          $('#next-btn').click(function() { set_idx(idx + 1) });
+          $('#prev-btn').click(function() { set_idx(idx - 1) });
+          $('#text-area').prop('disabled', false);
+          $('#submit-btn').prop('disabled', false);
+          $('#reset-btn').prop('disabled', false);
+          $('#reset-btn').click(function() {reset_annotation()});
+          $('#text-area').keydown(function() {reset_annotation()});
+
+          // Set up submit handler.
+          simpleamt.setupSubmit();
+          $('#submit-btn').click(function() {
+            //descriptions[idx] = $('#text-area').val();
+            if (_.any(numpts, function(d) { return d < 3; })) {
+              alert('At least one polygon is not closed. Please correct before submitting!');
+              return false;
+            }
+            var output = _.map(_.zip(input, coordinates), function(x) {
+              return {'image_url': x[0], 'coordinates': x[1]};
+            });
+            simpleamt.setOutput(output);
+          });
+        }
+
+        main();
+      });
+    </script>
+  </body>
+</html>

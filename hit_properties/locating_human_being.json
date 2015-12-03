@@ -1,0 +1,13 @@
+{
+  "title": "Locating human beings in images",
+  "description": "Locating human beings in the images by clicking on them.",
+  "keywords": "images, human beings, locating, location, click, clicking",
+  "reward": 0.05,
+  "duration": 1000,
+  "frame_height": 700,
+  "max_assignments": 50,
+  "country": "US",
+  "hits_approved": 1000,
+  "percent_approved": 95,
+  "adult_require": 1
+}
