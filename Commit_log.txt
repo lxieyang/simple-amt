@@ -1,0 +1,2 @@
+20151203
+major change to the 20151203_locating_two_objects_v_1.0 version of hit. Separated the shell script for the sandbox from the real productions site ones. Created two separate JSON files, one for the sandbox, one for the real production site. Above changes are reflected with the leading "SANDBOX_" or "REAL_" in relative files names and contents. The README.md is also updated to reflect the above changes. The license infor has also been updated to reflect the copyright infor.

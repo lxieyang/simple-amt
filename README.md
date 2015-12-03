@@ -92,6 +92,12 @@ To run your HITs on the production AMT site, simply append a `--prod` flag to ea
 **WARNING:** Running HITs on sandbox is free, but running HITs on the production site is not. In order to launch HITs your Mechanical Turk account must have sufficient funds to pay for all HITs; these funds will be held in escrow by Amazon once you
 launch HITs, and will be paid to workers when you approve assignments. 
 
+### More sophisticated example of locating objects in an image (just for your reference)
+The current project I'm working on is marked as 20151203_locating_two_objects_v_1.0 across the project. I implemented a task that allows workers to circle out two objects in a particular image wit the handy built-in polygon tool. I also added an instruction part to guide the workers throuhgout the whole process. The rest of the work are basically the same. Note that I marked all the files and shell scripts used for testing on the sandbox as `SANDBOX`, and the ones need for the production site as `REAL` to make your life easier, which fortunately, also saves my time and effort.
+
+### More mTurk related operations
+More mTurk related operations will be added to this README file once I figured those out. These features include rejecting assignments, showing your account balance and possibly others. The python program has already been uploaded, and you could figure them out by yourself.
+
 
 # Creating your own HITs
 To create your own HITs, you'll need to do the following:
@@ -139,6 +145,8 @@ python -m SimpleHTTPServer 8080
 
 then point your web browser at http://127.0.0.1:8080/.
 
+**WARNING:** Although it seems like you could finish the above procedures off-line, you `HAVE` to have Internet access while you render and view your html template on your local machine.
+
 ## Create HIT properties file
 To launch HITs, you need both an HTML template defining the UI for the HIT and a JSON file storing properties of the HIT. An example JSON file is `hit_properties/simple.json`. A HIT properties JSON file has the following fields (some are required and some are optional):
 
@@ -152,3 +160,4 @@ To launch HITs, you need both an HTML template defining the UI for the HIT and a
 - `country`: Optional. Must be a string. If you set this, then only workers from the specified country will be allowed to work on your HITs. This must be either a valid [ISO 3166 country code](http://www.iso.org/iso/country_codes/country_codes) or a valid [ISO 3166-2 subdivision code](http://en.wikipedia.org/wiki/ISO_3166-2:US). I usually just use "US".
 - `hits_approved`: Optional. Must be an integer. If you set this, then only workers who have had at least this many HITs approved on Mechanical Turk will be allowed to work on your assignments.
 - `percent_approved`: Optional. Must be an integer. If you set this, then only workers who have had at least this percent of their submitted HITs approved will be allowed to work on your HITs.
+- `adult_require`: Optional. Must be 0 or 1. This is related to age-control. Please put a 1 there if there are stuff in your hits that might not be appropriate for kids.
