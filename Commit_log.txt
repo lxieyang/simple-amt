@@ -1,3 +1,6 @@
+20151204 11:06:40
+3 sample annotation images are uploaded.
+
 20151203 17:26:40
 deleted the "adult_require" qualification.
 
