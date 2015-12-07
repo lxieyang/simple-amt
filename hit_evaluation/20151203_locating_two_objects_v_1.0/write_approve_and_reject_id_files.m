@@ -1,5 +1,6 @@
 function [] = write_approve_and_reject_id_files(url_file_name, sample_coord_result_file_name, result_file_name, threshold, ...
                                                 approve_id_file_name, reject_id_file_name)
+    % TODO: also examine the second set of coordinates, in this case, around the bicycles                                       
     [ assignment_id, image_url, coord_first, coord_second, worker_id, hit_id ] = parse_result(result_file_name);
     [ Sassignment_id, Simage_url, Scoord_first, Scoord_second, Sworker_id, Shit_id ] = parse_result(sample_coord_result_file_name);
     sample_entry = generate_sample_entry(url_file_name);

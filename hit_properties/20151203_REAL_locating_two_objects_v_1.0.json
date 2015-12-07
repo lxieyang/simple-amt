@@ -6,7 +6,5 @@
   "duration": 1000,
   "frame_height": 1750,
   "max_assignments": 3,
-  "country": "US",
-  "hits_approved": 1000,
-  "percent_approved": 95
+  "country": "US"
 }

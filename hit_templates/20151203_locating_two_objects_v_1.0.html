@@ -37,32 +37,35 @@
 
         <div class='panel-body'>
           <p><font size='3'>The provided picture should have at least one person interacting with an object in certain activity. 
-                            For example, in the three sample pictures below, there is at least a person riding a bicycle. 
+                            For example, in the three sample pictures below, there is at least one person riding a bicycle. 
                             Please localize a <strong>person</strong> and the <strong>interacting object</strong> in the <strong><u>target activity</u></strong>.</font></p>
           <ol>
             <li>First, find a person and an object involved in the <strong><u>target activity</u></strong>.</li>
             
             <li>Localize the <strong>person/object</strong> by drawing a <strong>TIGHT polygon</strong> around it.
-                Start with a single left click on the edge of the target. 
-                As your cursor moves along the edge of the target, you can left click as many times as you want till the polygon is complete. 
-                The point in <strong style='color:red'>RED</strong> will become <strong>BIGGER</strong> when your cursor gets close enough to the <strong>starting point</strong>. 
+            
+            <ol type = "a">
+                <li>Start with a single left click on the edge of the target. </li>
+                <li>As your cursor moves along the edge of the target, you can left click as many times as you want till the polygon is complete. </li>
+                <li>The point in <strong style='color:red'>RED</strong> will become <strong>BIGGER</strong> when your cursor gets close enough to the <strong>starting point</strong>. 
                 This is when you can click and complete the polygon.</li>
-              
+            </ol>  
+            
             <li>You will draw two polygons for each picture. <strong>FIRST</strong> for the <strong>person</strong>. <strong>SECOND</strong> for the object the person is interacting with. 
                 The polygon around the person will be in <strong style='color:blue'>BLUE</strong>, and the polygon around the object will be in <strong style='color:lime'>GREEN</strong>.</li>
                
             <li>You will <strong>NOT</strong> be able to draw a polygon for the object before the polygon around the person is complete.</li>
              
-            <li>To undo mistakes, you can click the <strong>Reset</strong> button or hit <strong>R</strong> on your keyboard to reset all the annotations you did to the current image. 
-              This only works for the <strong>CURRENT</strong> image. It does <strong>NOT</strong> affect your annotations to other images.</li>
+            <li>To undo mistakes, you can click the <strong>Reset</strong> button or hit <strong>R</strong> on your keyboard. This will reset all the annotations you did to the <strong>CURRENT</strong> image. 
+                It does <strong>NOT</strong> affect your annotations to other images.</li>
             
             <li>If you see <strong>MULTIPLE</strong> people performing the target activity, please pick <strong>ONE instance</strong> and localize the associated person and object.</li>
             
             <li>Three <strong>sample annotations</strong> are provided below. 
               Our target activity is riding a bicycle. 
-              In the right picture, there are three people <strong><u>riding a bicycle</u></strong>. 
-              You can pick either one to annotation. 
-              Please make sure you annotate a person-object pair which involves interaction, for example, the middle person plus the middle bicycle.</li>
+              In the third picture, there are two people <strong><u>riding bicycles</u></strong>. 
+              You can pick either one to annotate. 
+              Please make sure you annotate a person-object pair which involves interaction, for example, the left person along with the left bicycle.</li>
           </ol>
           
           <center>
@@ -79,7 +82,7 @@
           </ol>
           
           <br/>
-          <font size='3'><u>Warning</u>: Rejection is possible if your accuracy is too low. Some images may appear <strong>MULTIPLE</strong> times for evaluation purposes.</font>
+          <font size='3'><u>Warning</u>: Rejection is possible if your accuracy is too low.</font>
         </div>
       </div>
     </div>
@@ -87,9 +90,9 @@
     
     
     
-    <div class='container'>
-      <h4>There is a person <strong><u>riding a bicycle</u></strong> at the moment this picture is taken. <strong>Please draw <strong>two TIGHT</strong> polygons. 
-        One for the <strong>person</strong> and one for the bicycle he or she is riding.</strong></h4>
+    <div class='container' style="width: 800px">
+      <h3>There is a person <strong><u>riding a bicycle</u></strong> at the moment this picture is taken. <strong>Please draw <strong>two TIGHT</strong> polygons. 
+        One for the <strong>person</strong> and one for the bicycle he or she is riding.</strong></h3>
     </div>
 
     <div><center><canvas id='segmentation_canvas' width=600 height=400></canvas></center></div>
