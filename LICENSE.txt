@@ -1,4 +1,4 @@
-Current version updated by Xieyang Liu @ umich
+Current version updated by Xieyang Liu @ Umich
 
 Thanks to:
 The MIT License (MIT)
