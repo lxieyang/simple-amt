@@ -1,0 +1,15 @@
+function [] = write_approve_and_reject_id_files(url_file_name, sample_coord_result_file_name, result_file_name, threshold)
+    [ assignment_id, image_url, coord_first, coord_second, worker_id, hit_id ] = parse_result(result_file_name);
+    [ Sassignment_id, Simage_url, Scoord_first, Scoord_second, Sworker_id, Shit_id ] = parse_result(sample_coord_result_file_name);
+    sample_entry = generate_sample_entry(url_file_name);
+    [ave, roj] = generate_approve_reject(sample_entry, Scoord_first{1}, threshold, assignment_id, image_url, coord_first, coord_second, worker_id, hit_id);
+    
+    approveCount = 0;
+    rejectCount = 0;
+    for i = 1 : numel(roj)
+        if roj(i) == 1
+            rejectCount = 
+        end
+    end
+    
+end

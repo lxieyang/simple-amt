@@ -1,3 +1,0 @@
-["www.baidu.com","www.google.com","www.youtube.com"]
-["www.wix.com","www.umich.edu","www.fullvideo.com"]
-["www.partialvideo.com"]

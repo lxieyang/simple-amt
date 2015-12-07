@@ -79,6 +79,24 @@ If you are satisfied with the results that you have gotten, you can approve all 
 python approve_assignments.py --hit_ids_file=hit_operations/image_sentence/hit_ids.txt
 ```
 
+### Reject work
+If you are not satisfied with the results that you have gotten, you can reject assignments according to your HIT ids by running the following command:
+```
+python reject_assignments.py --hit_ids_file=hit_operations/image_sentence/hit_ids.txt
+```
+
+### Generating approve or reject id files
+You can run your results against your own evaluation system (for me, I wrote the whole system in MATLAB) and generate the approve ids file and reject ids file according to your own criteria. You can find sample evaluation system for the 20151203 project in the revelant hit_evaluation folder.
+Then, you can run the above commands with minor changes:
+Upon approval:
+```
+python approve_assignments.py --hit_ids_file=hit_operations/image_sentence/approve_hit_ids.txt
+```
+Upon rejection:
+```
+python reject_assignments.py --hit_ids_file=hit_operations/image_sentence/reject_hit_ids.txt
+```
+
 ### Delete HITs
 Once your HITs are completed and you have saved the results, you can delete the HITs from Amazon's database with the following command:
 ```
@@ -96,7 +114,7 @@ launch HITs, and will be paid to workers when you approve assignments.
 The current project I'm working on is marked as 20151203_locating_two_objects_v_1.0 across the project. I implemented a task that allows workers to circle out two objects in a particular image wit the handy built-in polygon tool. I also added an instruction part to guide the workers throuhgout the whole process. The rest of the work are basically the same. Note that I marked all the files and shell scripts used for testing on the sandbox as `SANDBOX`, and the ones need for the production site as `REAL` to make your life easier, which fortunately, also saves my time and effort.
 
 ### More mTurk related operations
-More mTurk related operations will be added to this README file once I figured those out. These features include rejecting assignments, showing your account balance and possibly others. The python program has already been uploaded, and you could figure them out by yourself.
+More mTurk related operations will be added to this README file once I figured those out. These features include showing your account balance and possibly others. The python program has already been uploaded so you could also figure them out by yourself.
 
 
 # Creating your own HITs
