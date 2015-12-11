@@ -6,35 +6,16 @@ function [] = vis_polygon(img_url, im_name, coord_first, coord_second)
 % anno_dir = './anno/';
 vis_dir  = './vis/';
 
-% if ~exist(vis_dir,'dir')
-%     mkdir(vis_dir);
-% end
-
-%list_im = { ...
-%    'sample.jpg' ...
-%    };
-
-% figure(1);
+ if ~exist(vis_dir,'dir')
+     mkdir(vis_dir);
+ end
 
 fprintf('visualizing annotation ... \n');
 
 for j = 1 : numel(img_url)
     for i = 1:numel(img_url{j})
-        % fprintf('  %04d/%04d %s\n',i,numel(list_im),list_im{i});
-        % im_file   = [im_dir list_im{i}];
 
-        % set annotation and visualization file
-        % [~,im_name,] = fileparts(list_im{i});
-        % anno_file = [anno_dir im_name '_anno.mat'];
-        vis_file  = [vis_dir im_name '_' char(j) '_' char(i) '_vis.png'];
-
-        % ensure the annotation file exists
-        % assert(exist(anno_file,'file') ~= 0);
-
-        % skip if the visualization file already exists
-        %if exist(vis_file,'file')
-        %    continue
-        %end
+        vis_file  = [vis_dir im_name '_' num2str(j) '_' num2str(i) '_vis.png'];
 
         % read image and load annotation
         im = imread(char(img_url{j}{i}));
@@ -45,7 +26,7 @@ for j = 1 : numel(img_url)
         clf; imshow(im); hold on;
 
         % remove matlab figure border
-        setup_im_gcf(size(im,1), size(im,2));
+        set_up_gcf(size(im,1), size(im,2));
 
         % display polygon
         poly1 = coord_first{j}{i};
@@ -62,6 +43,7 @@ for j = 1 : numel(img_url)
             'MarkerEdgeColor', 'r', ...
             'MarkerFaceColor', 'r' ...
             );
+        
         poly2 = coord_second{j}{i};
         hpoly2 = line( ...
             'Parent', gca, ...
@@ -80,17 +62,18 @@ for j = 1 : numel(img_url)
         % display bounding box
         rect1 = [min(coord_first{j}{i}(:,1)), min(coord_first{j}{i}(:,2)), ...
                 max(coord_first{j}{i}(:,1)) - min(coord_first{j}{i}(:,1)), ...
-                max(coord_first{j}{i}(:,2)), - min(coord_first{j}{i}(:,2))];
-        hbbox = rectangle( ...
+                max(coord_first{j}{i}(:,2)) - min(coord_first{j}{i}(:,2))];
+        hbbox1 = rectangle( ...
             'Position',rect1, ...
             'EdgeColor','g', ...
             'LineStyle', '--', ...
             'lineWidth',2 ...
             );
+        
         rect2 = [min(coord_second{j}{i}(:,1)), min(coord_second{j}{i}(:,2)), ...
                 max(coord_second{j}{i}(:,1)) - min(coord_second{j}{i}(:,1)), ...
-                max(coord_second{j}{i}(:,2)), - min(coord_second{j}{i}(:,2))];
-        hbbox = rectangle( ...
+                max(coord_second{j}{i}(:,2)) - min(coord_second{j}{i}(:,2))];
+        hbbox2 = rectangle( ...
             'Position',rect2, ...
             'EdgeColor','c', ...
             'LineStyle', '--', ...
@@ -99,6 +82,8 @@ for j = 1 : numel(img_url)
 
         % save file
         print(gcf,'-dpng',vis_file,'-r0');  % -r0: output with the same size
+        
+        % pause(1);
     end
 end
 %close;
