@@ -241,9 +241,14 @@
           }
           img.src = input[idx];
 
-          canvas_fix.onmousemove = mousemove_canvas;
+          // canvas_fix.onmousemove = mousemove_canvas;
           // canvas_fix.onmousedown = mousedown_canvas;
-          canvas_fix.onmouseup = mouseup_canvas;
+          // canvas_fix.onmouseup = mouseup_canvas;
+
+          canvas_fix.onmousemove = mousemove_canvas_rect;
+          // canvas_fix.onmousedown = mousedown_canvas;
+          canvas_fix.onmouseup = mouseup_canvas_rect;
+
           // img.onload = draw_image;
           // img.onload = draw_canvas;
           // draw_image();
@@ -293,16 +298,18 @@
 
 
             // two rect version
-            /*
+            
             rect_is_there_1[idx] = false;
             rect_is_there_2[idx] = false;
+            init_point_selected_1[idx] = false;
+            init_point_selected_2[idx] = false;
             there_is_description_rect[idx] = false;
             rect_x1[idx] = new Array();
             rect_y1[idx] = new Array();
             rect_x2[idx] = new Array();
             rect_y2[idx] = new Array();
             init_canvas();
-            */
+            
 
         }
 
@@ -365,24 +372,32 @@
         ctx.fillRect(cx-r,cy-r,2*r,2*r);
       }
 
-
       function draw_rect_1(){
           ctx.strokeStyle = linecolor;
           ctx.lineWidth = linewidth;
+
+          /*
+          if(!rect_is_there_1[idx])
+          {
+              ctx.fillStyle = 'red';
+              ctx.fillRect(rect_x1[idx][0] - pt_size, rect_y1[idx][0] - pt_size, 2 * pt_size, 2 * pt_size);
+              return;
+          }
+          */
 
           rect_x1[idx][1] = rect_x1[idx][0];
           rect_y1[idx][1] = rect_y1[idx][2];
           rect_x1[idx][3] = rect_x1[idx][2];
           rect_y1[idx][3] = rect_y1[idx][0];
 
-          for(i = 0; i < 4 - 1; i++)
+          for(i = 0; i < 4; i++)
           {
               ctx.beginPath();
-              ctx.moveTo(rect_x1[idx][i], rect_y1[idx][i]);
-              ctx.lineTo(rect_x1[idx][i + 1], rect_y1[idx][i + 1]);
+              ctx.moveTo(rect_x1[idx][i % 4], rect_y1[idx][i % 4]);
+              ctx.lineTo(rect_x1[idx][(i + 1) % 4], rect_y1[idx][(i + 1) % 4]);
               ctx.stroke();
           }
-          for(i = 0; i < numpts_1[idx]; i++)
+          for(i = 0; i < 4; i++)
           {
               ctx.fillStyle = 'red';
               ctx.fillRect(rect_x1[idx][i] - pt_size, rect_y1[idx][i] - pt_size, 2 * pt_size, 2 * pt_size);
@@ -394,26 +409,28 @@
           ctx.strokeStyle = 'lime';
           ctx.lineWidth = linewidth;
 
+          /*
           if(!rect_is_there_2[idx])
           {
               ctx.fillStyle = 'red';
               ctx.fillRect(rect_x2[idx][0] - pt_size, rect_y2[idx][0] - pt_size, 2 * pt_size, 2 * pt_size);
               return;
           }
+          */
 
           rect_x2[idx][1] = rect_x2[idx][0];
           rect_y2[idx][1] = rect_y2[idx][2];
           rect_x2[idx][3] = rect_x2[idx][2];
           rect_y2[idx][3] = rect_y2[idx][0];
 
-          for(i = 0; i < 4 - 1; i++)
+          for(i = 0; i < 4; i++)
           {
               ctx.beginPath();
-              ctx.moveTo(rect_x2[idx][i], rect_y2[idx][i]);
-              ctx.lineTo(rect_x2[idx][i + 1], rect_y2[idx][i + 1]);
+              ctx.moveTo(rect_x2[idx][i % 4], rect_y2[idx][i % 4]);
+              ctx.lineTo(rect_x2[idx][(i + 1) % 4], rect_y2[idx][(i + 1) % 4]);
               ctx.stroke();
           }
-          for(i = 0; i < numpts_1[idx]; i++)
+          for(i = 0; i < 4; i++)
           {
               ctx.fillStyle = 'red';
               ctx.fillRect(rect_x2[idx][i] - pt_size, rect_y2[idx][i] - pt_size, 2 * pt_size, 2 * pt_size);
@@ -547,10 +564,30 @@
                       var xy = grab_xy(event);
                       rect_x2[idx][0] = xy[0];
                       rect_y2[idx][0] = xy[1];
+                      init_point_selected_2[idx] = true;
                       draw_canvas();
                   }
               }
-
+          }
+          else
+          {
+              if(init_point_selected_1[idx])
+              {
+                  var xy = grab_xy(event);
+                  rect_x1[idx][2] = xy[0];
+                  rect_y1[idx][2] = xy[1];
+                  rect_is_there_1[idx] = true;
+                  draw_canvas();
+                  // deal with output
+              }
+              else
+              {
+                  var xy = grab_xy(event);
+                  rect_x1[idx][0] = xy[0];
+                  rect_y1[idx][0] = xy[1];
+                  init_point_selected_1[idx] = true;
+                  draw_canvas();
+              }
           }
       }
 
@@ -638,6 +675,7 @@
           {
               rect_x1[idx][2] = curr_x;
               rect_y1[idx][2] = curr_y;
+              draw_canvas();
           }
           else if(!init_point_selected_2[idx])
           {
@@ -648,9 +686,10 @@
           {
               rect_x2[idx][2] = curr_x;
               rect_y2[idx][2] = curr_y;
+              draw_canvas();
           }
 
-          draw_canvas();
+          // draw_canvas();
       }
 
 			function mousemove_canvas(event){
