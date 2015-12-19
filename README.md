@@ -1,28 +1,28 @@
-lxieyang-simple-amt
+simple-amt
 ==========
-lxieyang-simple-amt is a microframework for working with [Amazon's Mechanical Turk](http://www.mturk.com) (AMT). It was designed with the following three principles in mind:
+simple-amt is a microframework for working with [Amazon's Mechanical Turk](http://www.mturk.com) (AMT). It was designed with the following three principles in mind:
 
 - Abstract away the details of AMT to let you focus on your own task.
 - Place no restrictions on the structure of your AMT tasks.
 - Lightweight and easy to understand.
 
 # Quick start guide
-Follow these steps to set up lxieyang-simple-amt and run a simple HIT on AMT.
+Follow these steps to set up simple-amt and run a simple HIT on AMT.
 
 ### Check out the codebase and set up a virtualenv
 ```
-git clone https://gitlab.com/lxieyang/lxieyang-simple-amt.git
-cd lxieyang-simple-amt
+git clone https://github.com/lxieyang/simple-amt.git
+cd simple-amt
 virtualenv .env
 source .env/bin/activate
 pip install -r requirements.txt
 ```
 
 ### Configure your Amazon account
-To use AMT, you'll need an Amazon AWS account. To interact with Amazon, lxieyang-simple-amt needs
+To use AMT, you'll need an Amazon AWS account. To interact with Amazon, simple-amt needs
 an access key and corresponding secret key for your Amazon account. You can find these 
 [here](https://console.aws.amazon.com/iam/home?#security_credential). Once you have these,
-place then in a file called config.json for lxieyang-simple-amt:
+place then in a file called config.json for simple-amt:
 ```
 cp config.json.example config.json
 # edit config.json; fill out the "aws_access_key" and "aws_secret_key" fields.
@@ -127,7 +127,7 @@ To create your own HITs, you'll need to do the following:
 We'll walk through each of these steps in more detail.
 
 ## Build HIT UI
-Building the UI is typically the most time-consuming step in creating a new type of HIT. You will have to do most of the work yourself, but lxieyang-simple-amt can still help. As a running example, we will use the UI defined in `hit_templates/simple.html`. This is a very basic HIT that asks workers to write an example of a category, like a type of dog or a flavor of ice cream.
+Building the UI is typically the most time-consuming step in creating a new type of HIT. You will have to do most of the work yourself, but simple-amt can still help. As a running example, we will use the UI defined in `hit_templates/simple.html`. This is a very basic HIT that asks workers to write an example of a category, like a type of dog or a flavor of ice cream.
 
 If you look at `hit_templates/simple.html`, you'll notice that it looks like regular HTML except for the line
 ```
