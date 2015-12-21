@@ -36,9 +36,10 @@
         <div class='panel-heading'><font size='3'><strong>Instructions</strong></font></div>
 
         <div class='panel-body'>
-          <p><font size='3'>The provided pictures should have at least one person interacting with an object in certain activity.
-                            For example, in the three sample pictures below, there is at least one person riding a bicycle.
-                            Please localize a <strong>person</strong> and the <strong>interacting object</strong> in the <strong><u>target activity</u></strong>.</font></p>
+          <p><font size='3'>Given a picture, your task is localize a <strong>person</strong> plus an <strong>object</strong> involved in the <strong><u>target activity</u></strong>.
+                            Suppose the target activity is <strong><u>riding a bicycle</u></strong> (as shown in the sample annotations below), 
+                            your task is to draw two tight bounding boxes, one on the <strong>person</strong> (<strong style='color:blue'>BLUE</strong>) and one on the <strong>bicycle</strong> he is riding (<strong style='color:lime'>GREEN</strong>).
+          </font></p>
           <ol>
             <li>First, find a person and an object involved in the <strong><u>target activity</u></strong>.</li>
 
@@ -59,21 +60,21 @@
                 <li>When you find the current box satisfying, complete the box by lifting your finger from the left key of your mouse.</li>
             </ol>
 
-            <li>You will draw two tight boxes for each picture. <strong>FIRST</strong> for the <strong>person</strong>. <strong>SECOND</strong> for the object the person is interacting with.
-                The box around the person will be in <strong style='color:blue'>BLUE</strong>, and the box around the object will be in <strong style='color:lime'>GREEN</strong>.</li>
+            <li>You will draw two tight boxes for each picture. <strong>FIRST</strong> for the <strong>person</strong> (<strong style='color:blue'>BLUE</strong>). <strong>SECOND</strong> for the <strong>object</strong> the person is interacting with (<strong style='color:lime'>GREEN</strong>).</li>
 
             <li>You will <strong>NOT</strong> be able to draw a box for the object before the box around the person is drawn.</li>
 
-            <li>To undo mistakes, you can click the <strong>Reset</strong> button or hit <strong>R</strong> on your keyboard. This will reset all the annotations you did to the <strong>CURRENT</strong> image.
+            <li>To undo mistakes, you can click the <strong>Reset</strong> button or hit <strong>R</strong> on your keyboard. 
+                This will <strong>ONLY</strong> reset the annotations you did to the <strong>CURRENT</strong> image. 
                 It does <strong>NOT</strong> affect your annotations to other images.</li>
 
             <li>If you see <strong>MULTIPLE</strong> people performing the target activity, please pick <strong>ONE instance</strong> and localize the associated person and object.</li>
 
-            <li>Three <strong>sample annotations</strong> are provided below.
-              Our target activity is riding a bicycle.
-              In the third picture, there are two people <strong><u>riding bicycles</u></strong>.
-              You can pick either one to annotate.
-              Please make sure you annotate a person-object pair which involves interaction, for example, the left person along with the left bicycle.</li>
+            <li>Three <strong>sample annotations</strong> for <strong><u>riding a bicycle</u></strong> are shown below. 
+                If there are multiple people riding bicycles (the right picture), 
+                you can pick either one to annotate. 
+                Please make sure you annotate a person-object pair which involves interactions, 
+                for example, the left person along with the left bicycle.</li>
           </ol>
 
           <center>
@@ -99,8 +100,12 @@
 
 
     <div class='container' style="width: 800px">
-      <h3>There is a person <strong><u>riding a bicycle</u></strong> at the moment this picture is taken. <strong>Please draw <strong>two TIGHT</strong> boxes.
-        One for the <strong>person</strong> and one for the bicycle he or she is riding.</strong></h3>
+      <p>
+        <font size='5'>
+          There is a person <strong><u>riding a bicycle</u></strong> at the moment this picture is taken. Please draw two <strong>TIGHT</strong> boxes, 
+          One for the <strong>person</strong> and one for the bicycle he or she is riding.
+        </font>
+      </p>
     </div>
 
     <div><center><canvas id='segmentation_canvas' width=600 height=400></canvas></center></div>
