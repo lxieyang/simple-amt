@@ -45,20 +45,23 @@
 
             <li>Localize the <strong>person/object</strong> by drawing a <strong>TIGHT box</strong> around it.
             
-            <!--
-            <ol type = "a">
-                <li>Start with a single left click on the edge of the target. </li>
-                <li>As your cursor moves along the edge of the target, you can left click as many times as you want till the polygon is complete. </li>
-                <li>The point in <strong style='color:red'>RED</strong> will become <strong>BIGGER</strong> when your cursor gets close enough to the <strong>starting point</strong>.
-                This is when you can click and complete the polygon.</li>
-            </ol>
-            -->
-            
-            <ol type = "a">
-                <li>Start by choosing a proper location on the image to place the upper left vertex of your box. </li>
-                <li>Left click your mouse and keep the left key down as your cursor moves around on the image. You can preview the resulting box as the cursor moves around.</li>
-                <li>When you find the current box satisfying, complete the box by lifting your finger from the left key of your mouse.</li>
-            </ol>
+                <!--
+                <ol type = "a">
+                    <li>Start with a single left click on the edge of the target. </li>
+                    <li>As your cursor moves along the edge of the target, you can left click as many times as you want till the polygon is complete. </li>
+                    <li>The point in <strong style='color:red'>RED</strong> will become <strong>BIGGER</strong> when your cursor gets close enough to the <strong>starting point</strong>.
+                    This is when you can click and complete the polygon.</li>
+                </ol>
+                -->
+                
+                <ol type = "a">
+                    <li>Start by choosing a proper location on the image to place the upper left vertex of your box. </li>
+                    <li>Left click your mouse and keep the left key down as your cursor moves around on the image. 
+                        You can preview the resulting box as the cursor moves around.</li>
+                    <li>When you find the current box satisfying, 
+                        complete the box by lifting your finger from the left key of your mouse.</li>
+                </ol>
+            </li>
 
             <li>You will draw two tight boxes for each picture. <strong>FIRST</strong> for the <strong>person</strong> (<strong style='color:blue'>BLUE</strong>). <strong>SECOND</strong> for the <strong>object</strong> the person is interacting with (<strong style='color:lime'>GREEN</strong>).</li>
 
@@ -67,6 +70,18 @@
             <li>To undo mistakes, you can click the <strong>Reset</strong> button or hit <strong>R</strong> on your keyboard. 
                 This will <strong>ONLY</strong> reset the annotations you did to the <strong>CURRENT</strong> image. 
                 It does <strong>NOT</strong> affect your annotations to other images.</li>
+                
+            <li>If you find out that the boxes are not as <strong>TIGHT</strong> as expected, but are very close to what you want, 
+                you can <strong>adjust</strong> the them <u>without</u> resetting everything. 
+                To do so: 
+                <ol type = "a">
+                    <li>Start by moving the cursor to one of the vertices of the box you want to adjust. </li>
+                    <li>When the vertex you choose becomes bigger, 
+                        left click your mouse and and keep the left key down as your cursor moves around on the image. 
+                        You can preview the resulting box as the cursor moves around. </li>
+                    <li>You can complete adjusting by simply lifting your finger from the left key of your mouse.</li>
+                </ol>
+            </li>
 
             <li>If you see <strong>MULTIPLE</strong> people performing the target activity, please pick <strong>ONE instance</strong> and localize the associated person and object.</li>
 
@@ -206,7 +221,6 @@
         var tr = 8;
         
         // set up for box adjustments
-        // var key_down = [];
         var needAdj = [];
         var adjBoxIdx = [];
         var adjVertIdx = [];
@@ -239,6 +253,7 @@
         }
         
         // detect if close to one of the vertices of the first box
+        /* THIS FUNCTION IS NOT USED IN THE CURRENT IMPLEMENTATION */
         function get_closest_vertex_idx_1(){
             var vertIdx = -1;
             var minDist = 100000000;
@@ -261,6 +276,7 @@
         }
         
         // detect if close to one of the vertices of the second box
+        /* THIS FUNCTION IS NOT USED IN THE CURRENT IMPLEMENTATION */
         function get_closest_vertex_idx_2(){
             var vertIdx = -1;
             var minDist = 100000000;
@@ -282,6 +298,7 @@
                 return -1;
         }
         
+        // detect if close to one of the vertices of both boxes
         function get_closest_vertex_idx(){
             var boxIdx = -1;
             var vertIdx = -1;
@@ -321,6 +338,7 @@
                 return [-1, -1];
         }
         
+        // make the selected point become bigger
         function bold_the_point(x, y){
             draw_canvas();
             ctx.fillStyle = 'red';
@@ -343,7 +361,8 @@
             if(init_point_selected_2[idx])
                 clean_up_and_draw_rect_2();
         }
-
+        
+        // draw image
         function draw_image(){
             ctx.drawImage(img,0,0,CANVAS_WIDTH, CANVAS_HEIGHT);
         }
@@ -364,7 +383,7 @@
             init_canvas();
         }
 
-
+        /* THIS FUNCTION IS NOT USED IN THE CURRENT IMPLEMENTATION */
         function draw_rect_1(){
             ctx.strokeStyle = linecolor1;
             ctx.lineWidth = linewidth;
@@ -392,6 +411,7 @@
 
         }
         
+        // draw box 1
         function clean_up_and_draw_rect_1(){
             ctx.strokeStyle = linecolor1;
             ctx.lineWidth = linewidth;
@@ -420,7 +440,8 @@
             }
             
         }
-
+        
+        /* THIS FUNCTION IS NOT USED IN THE CURRENT IMPLEMENTATION */
         function draw_rect_2(){
             ctx.strokeStyle = linecolor2;
             ctx.lineWidth = linewidth;
@@ -447,6 +468,7 @@
             }
         }
         
+        // draw box 2
         function clean_up_and_draw_rect_2(){
             ctx.strokeStyle = linecolor2;
             ctx.lineWidth = linewidth;
@@ -476,7 +498,7 @@
             
         }
 
-
+        // return the current point of the cursor
         function grab_xy(event){
             var ev = event || window.event;
 
@@ -501,10 +523,9 @@
 
             return [cx,cy];
         }
-
+        
+        // do something when the left key of the mouse is lifted
         function mouseup_canvas_rect(event){
-            // key_down[idx] = false;
-            
             if(rect_is_there_1[idx])
             {
                 // deal with output     
@@ -554,6 +575,7 @@
             }
         }
         
+        // do something when the left key of the mouse is hit
         function mousedown_canvas_rect(event){
             if(needAdj[idx])
             {
@@ -561,12 +583,14 @@
                 if(adjBoxIdx[idx] == 0)
                 {
                     rect_is_there_1[idx] = false;
+                    // reseting init vertex coordinates
                     rect_x1[idx][0] = return_rect_x1[idx][(adjVertIdx[idx] + 2) % 4];
                     rect_y1[idx][0] = return_rect_y1[idx][(adjVertIdx[idx] + 2) % 4];
                 }
                 else
                 {
                     rect_is_there_2[idx] = false;
+                    // reseting init vertex coordinates
                     rect_x2[idx][0] = return_rect_x2[idx][(adjVertIdx[idx] + 2) % 4];
                     rect_y2[idx][0] = return_rect_y2[idx][(adjVertIdx[idx] + 2) % 4];
                 }
@@ -574,8 +598,7 @@
             
             // var info = $('#text-area').val() + needAdj[idx] + ' ' + adjBoxIdx[idx] + ' ' + adjVertIdx[idx];
             // $('#text-area').val(info);
-                
-            
+                   
             var xy = grab_xy(event);
             curr_x = xy[0];
             curr_y = xy[1];
@@ -589,7 +612,6 @@
             {
                 rect_x1[idx][2] = curr_x;
                 rect_y1[idx][2] = curr_y;
-                // rect_is_there_1[idx] = true;
                 draw_canvas();
             }
             else if(!init_point_selected_2[idx])
@@ -602,12 +624,11 @@
             {
                 rect_x2[idx][2] = curr_x;
                 rect_y2[idx][2] = curr_y;
-                // rect_is_there_2[idx] = true;
                 draw_canvas();
             }
-            
         }
-
+        
+        // do something as the cursor moves across the canvas
         function mousemove_canvas_rect(event){
             draw_canvas();
             needAdj[idx] = false;
@@ -675,6 +696,7 @@
             draw_canvas();
         }
         
+        // reparse rect data into return_rect
         function clean_up_rect_1(){
             var min = rect_x1[idx][0] + rect_y1[idx][0];
             var min_loc = 0;
@@ -709,6 +731,7 @@
             return result;
         }
         
+        // reparse rect data into return_rect
         function clean_up_rect_2(){
             var min = rect_x2[idx][0] + rect_y2[idx][0];
             var min_loc = 0;
@@ -741,7 +764,6 @@
             }
             return result;
         }
-
 
         // Use the current index to update the image and description
         function render() {
