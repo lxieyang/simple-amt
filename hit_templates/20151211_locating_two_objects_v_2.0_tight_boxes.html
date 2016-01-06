@@ -520,6 +520,9 @@
             if (cy < 0){cy = 0;}
             if (cx > CANVAS_WIDTH) {cx = CANVAS_WIDTH};
             if (cy > CANVAS_HEIGHT){cy = CANVAS_HEIGHT};
+            
+            cx = Math.floor(cx);
+            cy = Math.floor(cy);
 
             return [cx,cy];
         }
