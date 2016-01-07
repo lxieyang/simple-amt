@@ -1,0 +1,6 @@
+# binaries
+*.pyc
+
+# caches
+*_hit_ids.txt
+
