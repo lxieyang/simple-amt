@@ -36,14 +36,32 @@
         <div class='panel-heading'><font size='3'><strong>Instructions</strong></font></div>
 
         <div class='panel-body'>
-          <p><font size='3'>Given a picture, your task is to localize a <strong>person</strong> plus an <strong>object</strong> involved in the <strong><u>target activity</u></strong>.
-                            Suppose the target activity is <strong><u>riding a bicycle</u></strong> (as shown in the sample annotations below), 
+          <p><font size='3'>Given a picture, your task is to locate a <strong>person</strong> plus an <strong>object</strong> involved in the <strong><u>target activity</u></strong>.
+                            For example, if the target activity is <strong><u>riding a bicycle</u></strong> (as shown in the samples below),
                             your task is to draw two tight bounding boxes, one on the <strong>person</strong> (<strong style='color:blue'>BLUE</strong>) and one on the <strong>bicycle</strong> he is riding (<strong style='color:lime'>GREEN</strong>).
           </font></p>
+
+          <!--<p><font size='3'>
+            Three <strong>sample annotations</strong> for <strong><u>riding a bicycle</u></strong> are shown below.
+            If there are multiple people riding bicycles (the right picture),
+            you can pick either one to annotate.
+            Please make sure you annotate a person-object pair which involves interactions,
+            for example, the left person along with the left bicycle.
+          </font></p>-->
+
+          <center>
+            <h5>Three sample annotations for riding a bicycle</h5>
+            <img src='http://www-personal.umich.edu/~lxieyang/sample_anno_1.png' alt='tutorial1' style='width:300px;height:200px;'>
+            <img src='http://www-personal.umich.edu/~lxieyang/sample_anno_2.png' alt='tutorial2' style='width:220px;height:200px;'>
+            <img src='http://www-personal.umich.edu/~lxieyang/sample_anno_3.png' alt='tutorial3' style='width:300px;height:200px;'>
+          </center>
+          <br>
+
+          <p><font size='3'><strong>Drawing bounding boxes</strong></font></p>
           <ol>
             <li>First, find a person and an object involved in the <strong><u>target activity</u></strong>.</li>
 
-            <li>Localize the <strong>person/object</strong> by drawing a <strong>TIGHT box</strong> around it.
+            <li>Locate the <strong>person/object</strong> by drawing a <strong>TIGHT box</strong> around it.
             
                 <!--
                 <ol type = "a">
@@ -56,50 +74,43 @@
                 
                 <ol type = "a">
                     <li>Start by choosing a proper location on the image to place the upper left vertex of your box. </li>
-                    <li>Left click your mouse and keep the left key down as your cursor moves around on the image. 
-                        You can preview the resulting box as the cursor moves around.</li>
-                    <li>When you find the current box satisfying, 
-                        complete the box by lifting your finger from the left key of your mouse.</li>
+                    <li>Hold down your left mouse button and move the cursor around.
+                        You can see the resulting box as the cursor moves.</li>
+                    <li>Complete the box by releasing your left mouse button.</li>
                 </ol>
             </li>
 
-            <li>You will draw two tight boxes for each picture. <strong>FIRST</strong> for the <strong>person</strong> (<strong style='color:blue'>BLUE</strong>). <strong>SECOND</strong> for the <strong>object</strong> the person is interacting with (<strong style='color:lime'>GREEN</strong>).</li>
+            <li>You will draw <strong>TWO</strong> tight boxes for each picture. <strong>FIRST</strong> for the <strong>person</strong> (<strong style='color:blue'>BLUE</strong>). <strong>SECOND</strong> for the <strong>object</strong> the person is interacting with (<strong style='color:lime'>GREEN</strong>).</li>
 
             <li>You will <strong>NOT</strong> be able to draw a box for the object before the box around the person is drawn.</li>
+          </ol>
 
+          <p><font size='3'><strong>Adjusting bounding boxes</strong></font></p>
+          <ol>
             <li>To undo mistakes, you can click the <strong>Reset</strong> button or hit <strong>R</strong> on your keyboard. 
                 This will <strong>ONLY</strong> reset the annotations you did to the <strong>CURRENT</strong> image. 
                 It does <strong>NOT</strong> affect your annotations to other images.</li>
                 
-            <li>If you find out that the boxes are not as <strong>TIGHT</strong> as expected, but are very close to what you want, 
-                you can <strong>adjust</strong> the them <u>without</u> resetting everything. 
-                To do so: 
+            <li>If you think that the boxes are not perfectly <strong>TIGHT</strong>, but are very close to what you want,
+                you can <strong>adjust</strong> them <strong>without hitting reset</strong>.
                 <ol type = "a">
-                    <li>Start by moving the cursor to one of the vertices of the box you want to adjust. </li>
+                    <li>Move the cursor to one of the vertices of the box you want to adjust. </li>
                     <li>When the vertex you choose becomes bigger, 
-                        left click your mouse and and keep the left key down as your cursor moves around on the image. 
-                        You can preview the resulting box as the cursor moves around. </li>
-                    <li>You can complete adjusting by simply lifting your finger from the left key of your mouse.</li>
+                        hold down your left mouse button and move the cursor around.
+                        You can see the change as the cursor moves. </li>
+                    <li>Complete adjusting by releasing your left mouse button.</li>
                 </ol>
             </li>
-
-            <li>If you see <strong>MULTIPLE</strong> people performing the target activity, please pick <strong>ONE instance</strong> and localize the associated person and object.</li>
-
-            <li>Three <strong>sample annotations</strong> for <strong><u>riding a bicycle</u></strong> are shown below. 
-                If there are multiple people riding bicycles (the right picture), 
-                you can pick either one to annotate. 
-                Please make sure you annotate a person-object pair which involves interactions, 
-                for example, the left person along with the left bicycle.</li>
           </ol>
 
-          <center>
-            <h5>Sample Annotations</h5>
-            <img src='http://www-personal.umich.edu/~lxieyang/sample_anno_1.png' alt='tutorial1' style='width:300px;height:200px;'>
-            <img src='http://www-personal.umich.edu/~lxieyang/sample_anno_2.png' alt='tutorial2' style='width:220px;height:200px;'>
-            <img src='http://www-personal.umich.edu/~lxieyang/sample_anno_3.png' alt='tutorial3' style='width:300px;height:200px;'>
-          </center>
+          <p><font size='3'><strong>Special Cases</strong></font></p>
+          <ol>
+            <li>Like the rightmost sample annotation, you may see <strong>MULTIPLE</strong> people performing the target activity.
+                In such case, please <strong>pick ONE instance</strong> and locate the associated person and object.
+                Please make sure you annotate a person-object pair which involves <strong>interactions</strong>, for example, the left person along with the left bicycle.</li>
+          </ol>
 
-          <p><font size='3'>Keyboard interface</font></p>
+          <p><font size='3'><strong>Keyboard interface</strong></font></p>
           <ol>
             <li>[&rarr;] / [&larr;]&nbsp; : &nbsp;Go to the next/previous image</li>
             <li><strong>R</strong>: Reset annotation.</li>
