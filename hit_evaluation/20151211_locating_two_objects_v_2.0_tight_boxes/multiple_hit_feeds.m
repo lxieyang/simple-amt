@@ -1,7 +1,7 @@
 function [ new_lines ] = multiple_hit_feeds(lines, number_of_imgs, number_of_hits, sample_idx)
     
     %sample_idx = [ 2 5 19 21 29 70 ];
-    number_of_sample = 6;
+    number_of_sample = 30;
     
     for i = 1 : numel(sample_idx)
         sample_entry{i} = lines{sample_idx(i)};
@@ -38,5 +38,4 @@ function [ new_lines ] = multiple_hit_feeds(lines, number_of_imgs, number_of_hit
             selected_lines(:,1) = [];
         end
     end
-
 end

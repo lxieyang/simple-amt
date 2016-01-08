@@ -3,10 +3,37 @@ function [ assignment_id, ...
             coord_first, ...
             coord_second, ...
             worker_id, ...
-            hit_id ] = parse_single_line(result_line)
-    % locating assignment_id        
+            hit_id, ...
+            duration] = parse_single_line(result_line)
+    % locating hit_id
     asId_loc = strfind(result_line, '"');
-    assignment_id = result_line(asId_loc(3) + 1 : asId_loc(4) - 1);
+    hit_id = result_line(asId_loc(3) + 1 : asId_loc(4) - 1);
+    
+    % locating assignment_id        
+    assignment_id = result_line(asId_loc(7) + 1 : asId_loc(8) - 1);
+    
+    % locating worker_id
+    worker_id = result_line(asId_loc(15) + 1 : asId_loc(16) - 1);
+    
+    % locating accept time and submit time
+    accept_time = result_line(asId_loc(19) + 1 : asId_loc(20) - 1);
+    submit_time = result_line(asId_loc(11) + 1 : asId_loc(12) - 1);
+    acc_t = [str2num(accept_time(1 : 4)) ... % year
+             str2num(accept_time(6 : 7)) ... % month
+             str2num(accept_time(9 : 10)) ... % date
+             str2num(accept_time(12 : 13)) ... % hour
+             str2num(accept_time(15 : 16)) ... % minute
+             str2num(accept_time(18 : 19)) ... % second
+             ];
+    sub_t = [str2num(submit_time(1 : 4)) ... % year
+             str2num(submit_time(6 : 7)) ... % month
+             str2num(submit_time(9 : 10)) ... % date
+             str2num(submit_time(12 : 13)) ... % hour
+             str2num(submit_time(15 : 16)) ... % minute
+             str2num(submit_time(18 : 19)) ... % second
+             ];
+    duration = etime(sub_t, acc_t);
+    
     
     leftBracket_loc = strfind(result_line, '[');
     rightBracket_loc = strfind(result_line, ']');
@@ -51,12 +78,6 @@ function [ assignment_id, ...
             coord_second{i}(k, 2) = str2num(char(second{i}(2 * k)));
         end
     end
-    
-    % locating worker id
-    workerId_loc = strfind(result_line, '"worker_id":');
-    workerAndHitId = result_line(workerId_loc : numel(result_line));
-    quotation_loc = strfind(workerAndHitId, '"');
-    worker_id = workerAndHitId(quotation_loc(3) + 1 : quotation_loc(4) - 1);
-    hit_id = workerAndHitId(quotation_loc(7) + 1 : quotation_loc(8) - 1);
+
 
 end
