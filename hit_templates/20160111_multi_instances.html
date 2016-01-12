@@ -57,7 +57,7 @@
           </center>
           <br>
 
-          <p><font size='3'><strong>Drawing bounding boxes</strong></font></p>
+          <p><font size='3'><strong>Drawing Bounding Boxes</strong></font></p>
           <ol>
             <li>First, find a person and an object involved in the <strong><u>target activity</u></strong>.</li>
 
@@ -85,7 +85,7 @@
             <li>You will <strong>NOT</strong> be able to draw a box for the object before the box around the person is drawn.</li>
           </ol>
 
-          <p><font size='3'><strong>Adjusting bounding boxes</strong></font></p>
+          <p><font size='3'><strong>Adjusting Bounding Boxes</strong></font></p>
           <ol>
             <li>To undo mistakes, you can click the <strong>Reset</strong> button or hit <strong>R</strong> on your keyboard. 
                 This will <strong>ONLY</strong> reset the annotations you did to the <strong>CURRENT</strong> image. 
@@ -103,17 +103,28 @@
             </li>
           </ol>
 
-          <p><font size='3'><strong>Special Cases</strong></font></p>
-          <ol>
-            <li>Like the rightmost sample annotation, you may see <strong>MULTIPLE</strong> people performing the target activity.
-                In such case, please <strong>pick ONE instance</strong> and locate the associated person and object.
-                Please make sure you annotate a person-object pair which involves <strong>interactions</strong>, for example, the left person along with the left bicycle.</li>
-          </ol>
+          <p>
+            <font size='3'><strong>Multiple Instances</strong></font>
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;Like the rightmost sample annotation, you may see <strong>MULTIPLE</strong> instances of person-object pairs performing the target activity.
+            <strong>Please annotation ALL the instances you see</strong>.
+            <p style="margin-bottom: -3pt;"></p>
+            <ol>
+              <li>To add one instance, click <strong>Add One Instance</strong>.
+                  The annotated instances will be saved and shown on the picture.</li>
+              <li>Draw person/object box for the next instance as you have done before.</li>
+              <li>If the person (or object) of the new instance has already been annotated in previous instances, you can <strong>draw the new box</strong> with <strong>ONE click on one existing box</strong>.</li>
+              <li>If you hit Add One Instance by mistake, you can hit <strong>Remove One Instance</strong> to remove the current instance.</li>
+            </ol>
+          </p>
 
           <p><font size='3'><strong>Keyboard interface</strong></font></p>
           <ol>
             <li>[&rarr;] / [&larr;]&nbsp; : &nbsp;Go to the next/previous image</li>
             <li><strong>R</strong>: Reset annotation.</li>
+            <li><strong>A</strong>: Add one instance.</li>
+            <li><strong>D</strong>: Remove one instance.</li>
           </ol>
 
           <br/>
@@ -1024,6 +1035,7 @@
                 $('#text-area').val(desc);
                 // move the cursor in the textbox to the end
                 $('#text-area').focus();
+                $('#text-area').blur();
             }
 
             // Refresh the counter
@@ -1133,17 +1145,20 @@
             $('#reset-btn').click(function() { reset_annotation() });
             // $('html').keydown(function() {reset_annotation()});
             $('html').keydown(function(event){
-            if(event.which == 39)
-            {
+            if (event.which == 39) {
                 set_idx(idx + 1);
             }
-            else if(event.which == 37)
-            {
+            else if (event.which == 37) {
                 set_idx(idx - 1);
             }
-            else if(String.fromCharCode(event.keyCode || event.which) == 'R')
-            {
+            else if (String.fromCharCode(event.keyCode || event.which) == 'R') {
                 reset_annotation();
+            }
+            else if (String.fromCharCode(event.keyCode || event.which) == 'A') {
+                add_annotation();
+            }
+            else if (String.fromCharCode(event.keyCode || event.which) == 'D') {
+                remove_annotation();
             }
             })
 
