@@ -253,7 +253,8 @@
         
         // multiple instances
         var return_rect_stack = [];
-        var stk_opacity = 0.1;
+        var stk_opacity_rest = 0.1;
+        var stk_opacity_highlight = 0.4;
         var stk_linewidth = 2.0;
 
         // initalizing the vanvas
@@ -371,7 +372,7 @@
         
         // make the selected point become bigger
         function bold_the_point(x, y){
-            draw_canvas();
+            // draw_canvas();
             ctx.fillStyle = 'red';
             ctx.fillRect(x - bold_pt_size, y - bold_pt_size, 2 * bold_pt_size, 2 * bold_pt_size);
         }
@@ -393,14 +394,14 @@
                 clean_up_and_draw_rect_2();
 
             // draw all rect in stack
-            globalAlpha = stk_opacity / return_rect_stack[idx].length
+            opacity = stk_opacity_rest / return_rect_stack[idx].length
             _.each(return_rect_stack[idx], function(ret_rect) {
                 ctx.fillStyle = linecolor1;
                 ctx.strokeStyle = linecolor1;
-                draw_stack_rect(ret_rect[0], ret_rect[1], globalAlpha) 
+                draw_stack_rect(ret_rect[0], ret_rect[1], opacity)
                 ctx.fillStyle = linecolor2;
                 ctx.strokeStyle = linecolor2;
-                draw_stack_rect(ret_rect[2], ret_rect[3], globalAlpha)
+                draw_stack_rect(ret_rect[2], ret_rect[3], opacity)
             })
         }
         
@@ -422,6 +423,7 @@
             rect_y1[idx] = new Array();
             rect_x2[idx] = new Array();
             rect_y2[idx] = new Array();*/
+            return_rect_stack[idx] = [];
             init_canvas();
         }
 
@@ -493,8 +495,8 @@
         }
 
         // draw rect in stack
-        function draw_stack_rect(ret_rect_x, ret_rect_y, globalAlpha) {
-            ctx.globalAlpha = globalAlpha;
+        function draw_stack_rect(ret_rect_x, ret_rect_y, opacity) {
+            ctx.globalAlpha = opacity;
             tx = ret_rect_x[0]
             ty = ret_rect_y[0]
             tw = ret_rect_x[2] - ret_rect_x[0]
@@ -681,6 +683,16 @@
                         rect_x2[idx][2] = xy[0];
                         rect_y2[idx][2] = xy[1];
                         rect_is_there_2[idx] = true;
+                        // select existing object rect
+                        if (rect_x2[idx][2] == rect_x2[idx][0]
+                            && rect_y2[idx][2] == rect_y2[idx][0]) {
+                                rect = get_highlight_rect_2();
+                                if (rect) {
+                                    rect_x2[idx] = rect[0].slice(0);
+                                    rect_y2[idx] = rect[1].slice(0);
+                                }
+                        }
+                        // draw canvas
                         draw_canvas();
                         // deal with output
                         rect_coord_2[idx] = get_results_string_2();
@@ -697,6 +709,16 @@
                     rect_x1[idx][2] = xy[0];
                     rect_y1[idx][2] = xy[1];
                     rect_is_there_1[idx] = true;
+                    // select existing human rect
+                    if (rect_x1[idx][2] == rect_x1[idx][0]
+                        && rect_y1[idx][2] == rect_y1[idx][0]) {
+                            rect = get_highlight_rect_1();
+                            if (rect) {
+                                rect_x1[idx] = rect[0].slice(0);
+                                rect_y1[idx] = rect[1].slice(0);
+                            }
+                    }
+                    // draw canvas
                     draw_canvas();
                     // deal with output
                     rect_coord_1[idx] = get_results_string_1();
@@ -765,6 +787,8 @@
         // do something as the cursor moves across the canvas
         function mousemove_canvas_rect(event){
             draw_canvas();
+
+            // bounding box adjustment
             needAdj[idx] = false;
             adjBoxIdx[idx] = -1;
             adjVertIdx[idx] = -1;
@@ -794,6 +818,25 @@
                 // $('#text-area').val(info);         
             }
             
+            // use existing bounding box
+            if (!init_point_selected_1[idx]) {
+                // create a new variable to visit the stack in reverse order
+                rect = get_highlight_rect_1();
+                if (rect) {
+                    ctx.fillStyle = linecolor1;
+                    ctx.strokeStyle = linecolor1;
+                    draw_stack_rect(rect[0], rect[1], stk_opacity_highlight)
+                }
+            }
+            if (rect_is_there_1[idx] && !init_point_selected_2[idx]) {
+                rect = get_highlight_rect_2();
+                if (rect) {
+                    ctx.fillStyle = linecolor2;
+                    ctx.strokeStyle = linecolor2;
+                    draw_stack_rect(rect[0], rect[1], stk_opacity_highlight)
+                }
+            }
+
             if(!init_point_selected_1[idx])
             {
                 rect_x1[idx][0] = curr_x;
@@ -818,7 +861,41 @@
             }
 
         }
-    
+
+        // get highlighted human rect
+        function get_highlight_rect_1() {
+            t_ret_stack = return_rect_stack[idx].slice(0)
+            t_ret_stack.reverse()
+            rect = null;
+            $.each(t_ret_stack, function(index, ret_rect) {
+                if (curr_x >= ret_rect[0][0]
+                    && curr_y >= ret_rect[1][0]
+                    && curr_x <= ret_rect[0][2]
+                    && curr_y <= ret_rect[1][2]) {
+                        rect = [ret_rect[0], ret_rect[1]];
+                        return false;
+                }
+            })
+            return rect;
+        }
+
+        // get highlighted object rect
+        function get_highlight_rect_2() {
+            t_ret_stack = return_rect_stack[idx].slice(0)
+            t_ret_stack.reverse()
+            rect = null;
+            $.each(t_ret_stack, function(index, ret_rect) {
+                if (curr_x >= ret_rect[2][0]
+                    && curr_y >= ret_rect[3][0]
+                    && curr_x <= ret_rect[2][2]
+                    && curr_y <= ret_rect[3][2]) {
+                        rect = [ret_rect[2], ret_rect[3]];
+                        return false;
+                }
+            })
+            return rect;
+        }
+
         // keys to reset the annotation
         /* function keydown(event) {
             var key = String.fromCharCode(event.keyCode || event.which);
