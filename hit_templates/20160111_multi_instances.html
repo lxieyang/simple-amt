@@ -117,21 +117,19 @@
             </li>
           </ol>
 
-          <p>
-            <font size='3'><strong>Multiple Instances</strong></font>
-          </p>
+          <p><font size='3'><strong>Multiple Instances</strong></font></p>
           <p>
             &nbsp;&nbsp;&nbsp;Like the rightmost sample annotation, you may see <strong>MULTIPLE</strong> instances of person-object pairs performing the target activity.
             <strong>Please annotation ALL the instances you see</strong>.
-            <p style="margin-bottom: -3pt;"></p>
-            <ol>
-              <li>To add one instance, click <strong>Add One Instance</strong>.
-                  The current annotation will be saved and shown on the picture.</li>
-              <li>Draw the person and object box for the new added instance.</li>
-              <li>If the person (or object) of the new instance has already been annotated in previous instances, you can <strong>draw a new box</strong> with <strong>ONE click on one existing box</strong>.</li>
-              <li>If you hit <strong>Add One Instance</strong> by mistake, you can hit <strong>Remove One Instance</strong> to remove the current instance.</li>
-            </ol>
           </p>
+          <p style="margin-bottom: -3pt;">
+          <ol>
+            <li>To add one instance, click <strong>Add One Instance</strong>.
+                The current annotation will be saved and shown on the picture.</li>
+            <li>Draw the person and object box for the new added instance.</li>
+            <li>If the person (or object) of the new instance has already been annotated in previous instances, you can <strong>draw a new box</strong> with <strong>ONE click on one existing box</strong>.</li>
+            <li>If you hit <strong>Add One Instance</strong> by mistake, you can hit <strong>Remove One Instance</strong> to remove the current instance.</li>
+          </ol>
 
           <p><font size='3'><strong>Keyboard interface</strong></font></p>
           <ol>
@@ -152,16 +150,18 @@
     <br>
     <div class='container' style="display: table; width: 1000px; height: 180px; border:1px solid black; background-color: #f5f5f5;">
       <div style="display: table-cell; vertical-align: middle;">
-      <p><font size='5'>
+        <font size='5'>
+          <p style="margin-bottom: 7pt;">
             There is a person <strong><u>riding a bicycle</u></strong> at the moment this picture is taken.
-            <p style="margin-bottom: 0pt;"></p>
+          </p>
+          <p style="margin-bottom: 0pt;">
             Please draw <strong>TIGHT</strong> boxes:
-            <p style="margin-bottom: 0pt;"></p>
-            <ol style="margin-left: 20px;">
-              <li>around the <strong>person</strong>.</li>
-              <li>around the <strong>bicycle</strong> he or she is riding.</li>
-            </ol>
-        </font></p>
+          </p>
+          <ol style="margin-left: 20px;">
+            <li>around the <strong>person</strong>.</li>
+            <li>around the <strong>bicycle</strong> he or she is riding.</li>
+          </ol>
+        </font>
       </div>
     </div>
     <br>
@@ -185,7 +185,7 @@
               <!-- text area -->
               <div class='col-xs-12 text-center'>
                 <center><textarea id='text-area' class='form-control tb-margin' style="margin: 0pt; height: 240pt; margin-bottom: 30pt; resize: none;" disabled></textarea></center>
-              <div>
+              </div>
               <!-- add / remove / reset -->
               <div class='col-xs-12 text-center'>
                 <center>
@@ -193,7 +193,7 @@
                   <button id='remove-btn' class='btn btn-lg btn-primary' style="width: 170pt; margin-bottom: 8pt" disabled>Remove One Instance</button><br>
                   <button id='reset-btn' class='btn btn-lg btn-danger' style="width: 170pt; margin-bottom: 30pt;" disabled>Reset</button>
                 </center>
-              <div>
+              </div>
               <p style="margin-bottom: 5pt;"></p>
               <!-- back / next -->
               <div class='col-xs-12 text-center' id='button-div'>
@@ -204,15 +204,17 @@
                     <span class='counter-top'></span> / <span class='counter-bottom'></span>
                   </span>
                 </p>
+                <p style="margin-bottom: 20pt;"></p>
               </div>
+              <!-- submit -->
+              {% include "simpleamt.html" %}
+              <!--<link rel="import" href="simpleamt.html">-->
             </div>
           </div>
         </fieldset>
       </div>
     </div>
 
-    <!--{% include "simpleamt.html" %}-->
-    <link rel="import" href="simpleamt.html">
 
     <script>
         $(function() {
@@ -1030,7 +1032,7 @@
         }
 
         function pad_leading_zero_3(x) {
-            return (x < 100) ? ( (x >= 10) ? ("0" + x) : ("00" + x) ) : x;
+            return (x < 100) ? ( (x >= 10) ? ('0' + x) : ('00' + x) ) : x;
         }
 
         // Use the current index to update the image and description
