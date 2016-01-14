@@ -189,10 +189,19 @@
 
         // bounding box adjustment
         var adjust_drag = false;
-        var adjust_rt_idx = -1;
-        var adj_cand_rt_idx = -1;
+        var adjust_rt_idx = -1
+        var adj_cand_rt = null;
+        var adj_cand_rt_idx = -1;  // required for draw_canvas()
+        var adj_cand_ln_color = null;
         var adj_cand_vt_idx = -1;
         var adj_cand_vt_thres = 8;
+
+        // bounding box highlight
+        var hl_on = false;
+        var hl_cand_rt = null;
+        var hl_cand_ln_color = null;
+        var hl_cand_opacity = 0.3;
+        var hl_down_opacity = 0.5;
 
         // Initalizing the canvas.
         function init_canvas() {
@@ -226,6 +235,7 @@
  
           if (phase == 1) { is_fg_1 = true; is_fg_2 = false; };
           if (phase == 2) { is_fg_1 = false; is_fg_2 = true; };
+          if (phase == 3) { is_fg_1 = false; is_fg_2 = false; };
 
           // Draw boxes in stack 1
           $.each(return_rect_stack_1[idx], function(index, clean_rect) {
@@ -267,26 +277,34 @@
               
               clean_rect = clean_up_raw_rect();
 
-              if (phase == 1) { draw_rect(clean_rect[0], clean_rect[1], ln_color_1, true); };
-              if (phase == 2) { draw_rect(clean_rect[0], clean_rect[1], ln_color_2, true); };
+              if (phase == 1) { draw_rect(clean_rect[0], clean_rect[1], ln_color_1, true); }
+              if (phase == 2) { draw_rect(clean_rect[0], clean_rect[1], ln_color_2, true); }
             }
 
             // Adjust bounding box
-            get_closest_vertex_idx();
+            if (!cursor_drag) {
+              get_closest_vertex_idx();
 
-            if (!adjust_drag && adj_cand_rt_idx != -1 && adj_cand_vt_idx != -1) {
-              if (phase == 1) { adj_rect = return_rect_stack_1[idx][adj_cand_rt_idx]; };
-              if (phase == 2) { adj_rect = return_rect_stack_2[idx][adj_cand_rt_idx]; };
-              bold_point(adj_rect[0][adj_cand_vt_idx], adj_rect[1][adj_cand_vt_idx]);
+              if (adj_cand_rt) {
+                bold_point(adj_cand_rt[0][adj_cand_vt_idx], adj_cand_rt[1][adj_cand_vt_idx]);
+              }
+            }
+
+            // Highlight bounding box
+            if (!cursor_drag) {
+              get_highlight_rect();
+
+              console.log(return_rect_stack_1[idx][0][0] + ' ' + return_rect_stack_1[idx][0][1])
+
+              if (hl_cand_rt && !adj_cand_rt) {
+                fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_cand_opacity, true);
+              }
             }
           }
         }
 
         // Do something when the left key of the mouse is hit
         function mousedown_canvas_rect(event) {
-          // Get current cursor coordinates
-          grab_xy(event);
-
           // Phase 1 or Phase 2
           if (phase == 1 || phase == 2) {
             // Set bounding box
@@ -297,24 +315,33 @@
             }
             
             // Adjust bounding box
-            if (adj_cand_rt_idx != -1 && adj_cand_vt_idx != -1) {
-              if (phase == 1) { adj_rect = return_rect_stack_1[idx][adj_cand_rt_idx]; };
-              if (phase == 2) { adj_rect = return_rect_stack_2[idx][adj_cand_rt_idx]; };
+            if (adj_cand_rt) {
+              raw_rect_x[0] = adj_cand_rt[0][(adj_cand_vt_idx + 2) % 4];
+              raw_rect_y[0] = adj_cand_rt[1][(adj_cand_vt_idx + 2) % 4];
 
-              raw_rect_x[0] = adj_rect[0][(adj_cand_vt_idx + 2) % 4];
-              raw_rect_y[0] = adj_rect[1][(adj_cand_vt_idx + 2) % 4];
               cursor_drag = true;
               adjust_drag = true;
               adjust_rt_idx = adj_cand_rt_idx;
+
+              draw_canvas();
+
+              raw_rect_x[2] = cursor_x;
+              raw_rect_y[2] = cursor_y;
+
+              clean_rect = clean_up_raw_rect();
+
+              draw_rect(clean_rect[0], clean_rect[1], adj_cand_ln_color, true);
+            }
+
+            // Highlight boudning box
+            if (hl_cand_rt && !adj_cand_rt) {
+              fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, true);
             }
           }
         }
 
         // Do something when the left key of the mouse is lifted
         function mouseup_canvas_rect(event) {
-          // Get current cursor coordinates
-          grab_xy(event);
-
           // Phase 1 or Phase 2
           if (phase == 1 || phase == 2) {
             // Set bounding boxes
@@ -386,17 +413,22 @@
 
         // Reparse rect data into return_rect
         function clean_up_raw_rect() {
+            // Complete raw rect
+            raw_rect_x[1] = raw_rect_x[0];
+            raw_rect_y[1] = raw_rect_y[2];
+            raw_rect_x[3] = raw_rect_x[2];
+            raw_rect_y[3] = raw_rect_y[0];
+
             // Get min id
             var min_val = raw_rect_x[0] + raw_rect_y[0];
             var min_loc = 0;
-            for(var i = 1; i < 4; i++)
-            {
+            for (var i = 1; i < 4; i++) {
                 if (min_val > raw_rect_x[i] + raw_rect_y[i]) {
                     min_val = raw_rect_x[i] + raw_rect_y[i];
                     min_loc = i;
                 }
             }
-            
+
             // Create cleaned rect
             var clean_rect_x = new Array(4);
             var clean_rect_y = new Array(4);
@@ -463,12 +495,17 @@
           })
 
           if (min_dist < Math.pow(adj_cand_vt_thres, 2)) {
+            adj_cand_rt = return_rect_stack[rt_idx];
             adj_cand_rt_idx = rt_idx;
             adj_cand_vt_idx = vt_idx;
+            if (phase == 1) { adj_cand_ln_color = ln_color_1; }
+            if (phase == 2) { adj_cand_ln_color = ln_color_2; }
           }
           else {
+            adj_cand_rt = null;
             adj_cand_rt_idx = -1;
             adj_cand_vt_idx = -1;
+            adj_cand_ln_color = null;
           }
         }
 
@@ -476,6 +513,45 @@
         function bold_point(x, y) {
             ctx.fillStyle = vt_color;
             ctx.fillRect(x - vt_width_bold, y - vt_width_bold, 2 * vt_width_bold, 2 * vt_width_bold);
+        }
+
+        // Get highlighted rect. Use the newer one if there are overlapping boxes.
+        function get_highlight_rect() {
+          if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; };
+          if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; };
+
+          hl_cand_rt = null;
+          t_ret_rect = return_rect_stack.slice(0)
+          t_ret_rect.reverse()
+          $.each(t_ret_rect, function(index, ret_rect) {
+            if (cursor_x >= ret_rect[0][0]
+                && cursor_y >= ret_rect[1][0]
+                && cursor_x <= ret_rect[0][2]
+                && cursor_y <= ret_rect[1][2]) {
+              hl_cand_rt = ret_rect;
+              return false;
+            }
+          })
+
+          if (hl_cand_rt) {
+            if (phase == 1) { hl_cand_ln_color = ln_color_1; }
+            if (phase == 2) { hl_cand_ln_color = ln_color_2; }
+          }
+        }
+
+        // Fill rectangle given opacity
+        function fill_rect(clean_rect_x, clean_rect_y, color, opacity, is_fg) {
+            ctx.fillStyle = color;
+            ctx.globalAlpha = opacity;
+            tx = clean_rect_x[0]
+            ty = clean_rect_y[0]
+            tw = clean_rect_x[2] - clean_rect_x[0]
+            th = clean_rect_y[2] - clean_rect_y[0]
+            ctx.fillRect(tx, ty, tw, th);
+            ctx.globalAlpha = 1;
+
+            // Assume we always need to draw edges or vertices when using fill_rect()
+            draw_rect(clean_rect_x, clean_rect_y, color, is_fg);
         }
 
 
@@ -548,7 +624,7 @@
             enable_hit();
           }
 
-          // Initialization
+          // initialization
           _.each(input, function() { return_rect_stack_1.push([]); return_rect_stack_2.push([]); });
 
           // Preload all images
