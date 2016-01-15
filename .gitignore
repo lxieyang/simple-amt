@@ -14,3 +14,9 @@ config.json
 *.jpg
 *.PNG
 *.JPG
+
+# python
+.env
+
+# texts
+*.txt
