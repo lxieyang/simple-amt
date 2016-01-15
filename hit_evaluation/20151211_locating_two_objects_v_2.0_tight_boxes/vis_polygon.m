@@ -106,7 +106,7 @@ for j = 1 : numel(assignment_id)
         print(gcf,'-dpng',vis_file,'-r0');  % -r0: output with the same size
         
         % pause if you want to take a closer look
-        % pause(1);
+        pause(1);
         
         close;
     end

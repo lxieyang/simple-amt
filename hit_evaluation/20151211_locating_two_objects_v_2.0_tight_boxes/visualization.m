@@ -1,7 +1,10 @@
 % this function performs visualization of the annotations. It could get
 % inefficient when used with writing rejecting file simultaneously.
 
-function [] = visualization(sample_result_file_name, result_file_name)
+function [] = visualization(result_file_name)
+    % sample result file location
+    sample_result_file_name = './results/30_img_sample_result.txt';
+    
     [ assignment_id, image_url, coord_first, coord_second, worker_id, hit_id, duration ] ...
         = parse_result(result_file_name);
     [ Sassignment_id, Simage_url, Scoord_first, Scoord_second, Sworker_id, Shit_id, Sduration ] ...

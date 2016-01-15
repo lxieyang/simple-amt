@@ -5,3 +5,12 @@
 *_hit_ids.txt
 *_results.txt
 *_reject.txt
+
+# config
+config.json
+
+# images
+*.png
+*.jpg
+*.PNG
+*.JPG
