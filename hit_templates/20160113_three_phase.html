@@ -197,7 +197,7 @@
         var adj_cand_vt_thres = 8;
 
         // bounding box highlight
-        var hl_on = false;
+        var hl_rt = null;
         var hl_cand_rt = null;
         var hl_cand_ln_color = null;
         var hl_cand_opacity = 0.3;
@@ -254,6 +254,11 @@
             }
             draw_rect(clean_rect[0], clean_rect[1], ln_color_2, is_fg_2);
           })
+
+          // Draw highlight box
+          if (hl_rt) {
+            fill_rect(hl_rt[0], hl_rt[1], hl_cand_ln_color, hl_down_opacity, true);
+          }
         }
 
         // Draw image.
@@ -294,10 +299,15 @@
             if (!cursor_drag) {
               get_highlight_rect();
 
-              console.log(return_rect_stack_1[idx][0][0] + ' ' + return_rect_stack_1[idx][0][1])
-
               if (hl_cand_rt && !adj_cand_rt) {
-                fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_cand_opacity, true);
+                // Do not add further effects if the box is currently highlighted
+                if (!(hl_rt
+                      && cursor_x >= hl_rt[0][0]
+                      && cursor_y >= hl_rt[1][0]
+                      && cursor_x <= hl_rt[0][2]
+                      && cursor_y <= hl_rt[1][2])) {
+                  fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_cand_opacity, true);
+                }
               }
             }
           }
@@ -334,7 +344,9 @@
             }
 
             // Highlight boudning box
+            hl_rt = null;
             if (hl_cand_rt && !adj_cand_rt) {
+              draw_canvas();
               fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, true);
             }
           }
@@ -350,8 +362,16 @@
               raw_rect_x[2] = cursor_x;
               raw_rect_y[2] = cursor_y;
 
-              // Save to stack
-              save_rect_to_stack();
+              // Highlight boudning box
+              if (hl_cand_rt && !adj_cand_rt
+                  && raw_rect_x[2] == raw_rect_x[0]
+                  && raw_rect_y[2] == raw_rect_y[0]) {
+                hl_rt = hl_cand_rt;
+              }
+              else {
+                // Save to stack
+                save_rect_to_stack();
+              }
 
               // Set cursor state
               cursor_drag = false;
@@ -541,17 +561,17 @@
 
         // Fill rectangle given opacity
         function fill_rect(clean_rect_x, clean_rect_y, color, opacity, is_fg) {
-            ctx.fillStyle = color;
-            ctx.globalAlpha = opacity;
-            tx = clean_rect_x[0]
-            ty = clean_rect_y[0]
-            tw = clean_rect_x[2] - clean_rect_x[0]
-            th = clean_rect_y[2] - clean_rect_y[0]
-            ctx.fillRect(tx, ty, tw, th);
-            ctx.globalAlpha = 1;
+          ctx.fillStyle = color;
+          ctx.globalAlpha = opacity;
+          tx = clean_rect_x[0]
+          ty = clean_rect_y[0]
+          tw = clean_rect_x[2] - clean_rect_x[0]
+          th = clean_rect_y[2] - clean_rect_y[0]
+          ctx.fillRect(tx, ty, tw, th);
+          ctx.globalAlpha = 1;
 
-            // Assume we always need to draw edges or vertices when using fill_rect()
-            draw_rect(clean_rect_x, clean_rect_y, color, is_fg);
+          // Assume we always need to draw edges or vertices when using fill_rect()
+          draw_rect(clean_rect_x, clean_rect_y, color, is_fg);
         }
 
 
@@ -559,6 +579,7 @@
         function set_phase(p) {
           if (p == 1 || p == 2 || p ==3) {
             phase = p;
+            hl_rt = null;
           }
           else {
             alert('set phase error');
