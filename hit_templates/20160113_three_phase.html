@@ -198,7 +198,9 @@
 
         // bounding box highlight
         var hl_rt = null;
+        var hl_rt_idx = -1;
         var hl_cand_rt = null;
+        var hl_cand_rt_idx = -1;
         var hl_cand_ln_color = null;
         var hl_cand_opacity = 0.3;
         var hl_down_opacity = 0.5;
@@ -301,14 +303,15 @@
 
               if (hl_cand_rt && !adj_cand_rt) {
                 // Do not add further effects if the box is currently highlighted
-                if (!(hl_rt
-                      && cursor_x >= hl_rt[0][0]
-                      && cursor_y >= hl_rt[1][0]
-                      && cursor_x <= hl_rt[0][2]
-                      && cursor_y <= hl_rt[1][2])) {
+                if (hl_rt_idx != hl_cand_rt_idx) {
                   fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_cand_opacity, true);
                 }
               }
+            }
+            else {
+              // Make sure highlight is always off when the cursor starts being dragged
+              hl_rt = null;
+              hl_rt_idx = -1;
             }
           }
         }
@@ -317,6 +320,13 @@
         function mousedown_canvas_rect(event) {
           // Phase 1 or Phase 2
           if (phase == 1 || phase == 2) {
+            // Update highlight
+            if (!(hl_rt && hl_cand_rt_idx == hl_rt_idx) || adj_cand_rt) {
+              hl_rt = null;
+              hl_rt_idx = -1;
+              draw_canvas();
+            }
+
             // Set bounding box
             if (!cursor_drag) {
               raw_rect_x[0] = cursor_x;
@@ -344,9 +354,7 @@
             }
 
             // Highlight boudning box
-            hl_rt = null;
             if (hl_cand_rt && !adj_cand_rt) {
-              draw_canvas();
               fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, true);
             }
           }
@@ -362,15 +370,25 @@
               raw_rect_x[2] = cursor_x;
               raw_rect_y[2] = cursor_y;
 
-              // Highlight boudning box
-              if (hl_cand_rt && !adj_cand_rt
-                  && raw_rect_x[2] == raw_rect_x[0]
-                  && raw_rect_y[2] == raw_rect_y[0]) {
-                hl_rt = hl_cand_rt;
-              }
-              else {
+              if (raw_rect_x[2] != raw_rect_x[0]
+                  || raw_rect_y[2] != raw_rect_y[0]) {
                 // Save to stack
                 save_rect_to_stack();
+              }
+              else {
+                // Highlight boudning box
+                if (hl_cand_rt) {
+                  if (hl_cand_rt_idx != hl_rt_idx) {
+                    hl_rt = hl_cand_rt;
+                    hl_rt_idx = hl_cand_rt_idx;
+                  }
+                  else {
+                    // Remove bounding box
+                    remove_rect_from_stack(hl_rt_idx);
+                    hl_rt = null;
+                    hl_rt_idx = -1;
+                  }
+                }
               }
 
               // Set cursor state
@@ -541,6 +559,7 @@
           if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; };
 
           hl_cand_rt = null;
+          hl_cand_rt_idx = -1;
           t_ret_rect = return_rect_stack.slice(0)
           t_ret_rect.reverse()
           $.each(t_ret_rect, function(index, ret_rect) {
@@ -549,6 +568,7 @@
                 && cursor_x <= ret_rect[0][2]
                 && cursor_y <= ret_rect[1][2]) {
               hl_cand_rt = ret_rect;
+              hl_cand_rt_idx = t_ret_rect.length - 1 - index;
               return false;
             }
           })
@@ -574,12 +594,27 @@
           draw_rect(clean_rect_x, clean_rect_y, color, is_fg);
         }
 
+        // Remove rect from stack
+        function remove_rect_from_stack(rt_idx) {
+          if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; }
+          if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; }
+
+          if (rt_idx < 0 || rt_idx >= return_rect_stack.length) {
+            alert('error removing rect from stack');
+          }
+          else {
+            return_rect_stack.splice(rt_idx, 1);
+          }
+        }
+
 
         // Set task phase.
         function set_phase(p) {
           if (p == 1 || p == 2 || p ==3) {
             phase = p;
+
             hl_rt = null;
+            hl_rt_idx = -1;
           }
           else {
             alert('set phase error');
