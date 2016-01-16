@@ -165,7 +165,7 @@
         // cursor state
         var cursor_x = 0;
         var cursor_y = 0;
-        var cursor_drag = false;
+        var mouse_down = false;
 
         // task phase
         var phase = 1;
@@ -188,8 +188,8 @@
         var vt_width_bold = 8.0;
 
         // bounding box adjustment
-        var adjust_drag = false;
-        var adjust_rt_idx = -1
+        var adj_on = false;
+        var adj_rt_idx = -1
         var adj_cand_rt = null;
         var adj_cand_rt_idx = -1;  // required for draw_canvas()
         var adj_cand_ln_color = null;
@@ -204,6 +204,7 @@
         var hl_cand_ln_color = null;
         var hl_cand_opacity = 0.3;
         var hl_down_opacity = 0.5;
+
 
         // Initalizing the canvas.
         function init_canvas() {
@@ -235,31 +236,37 @@
           ctx.clearRect(0, 0, canvas_fix.width, canvas_fix.height);
           draw_image();
  
-          if (phase == 1) { is_fg_1 = true; is_fg_2 = false; };
-          if (phase == 2) { is_fg_1 = false; is_fg_2 = true; };
-          if (phase == 3) { is_fg_1 = false; is_fg_2 = false; };
+          if (phase == 1) { is_fg_1 = true; is_fg_2 = false; is_fg_hl = true; };
+          if (phase == 2) { is_fg_1 = false; is_fg_2 = true; is_fg_hl = true; };
+          if (phase == 3) { is_fg_1 = false; is_fg_2 = false; is_fg_hl = false; };
 
           // Draw boxes in stack 1
           $.each(return_rect_stack_1[idx], function(index, clean_rect) {
             // Skip the one that is currently being adjusted
-            if (phase == 1 && adjust_drag && index == adjust_rt_idx) {
-              return true;
-            }
+            if (phase == 1 && adj_on && index == adj_rt_idx) { return true; }
             draw_rect(clean_rect[0], clean_rect[1], ln_color_1, is_fg_1);
           })
 
           // Draw boxes in stack 2
           $.each(return_rect_stack_2[idx], function(index, clean_rect) {
             // Skip the one that is currently being adjusted
-            if (phase == 2 && adjust_drag && index == adjust_rt_idx) {
-              return true;
-            }
+            if (phase == 2 && adj_on && index == adj_rt_idx) { return true; }
             draw_rect(clean_rect[0], clean_rect[1], ln_color_2, is_fg_2);
           })
 
           // Draw highlight box
           if (hl_rt) {
-            fill_rect(hl_rt[0], hl_rt[1], hl_cand_ln_color, hl_down_opacity, true);
+            if (phase == 1) { hl_ln_color = ln_color_1; }
+            if (phase == 2) { hl_ln_color = ln_color_2; }
+            if (phase == 3) {
+              if (hl_rt_idx >= return_rect_stack_2[idx].length) {
+                hl_ln_color = ln_color_1;
+              }
+              else {
+                hl_ln_color = ln_color_2;
+              }
+            }
+            fill_rect(hl_rt[0], hl_rt[1], hl_ln_color, hl_down_opacity, is_fg_hl);
           }
         }
 
@@ -275,10 +282,10 @@
           // Get current cursor coordinates
           grab_xy(event);
 
-          // Phase 1 or Phase 2
+          // Phase 1 and Phase 2 only
           if (phase == 1 || phase == 2) {
             // Draw bounding box
-            if (cursor_drag) {
+            if (mouse_down) {
               raw_rect_x[2] = cursor_x;
               raw_rect_y[2] = cursor_y;
               
@@ -289,22 +296,30 @@
             }
 
             // Adjust bounding box
-            if (!cursor_drag) {
+            if (!mouse_down) {
               get_closest_vertex_idx();
 
               if (adj_cand_rt) {
                 bold_point(adj_cand_rt[0][adj_cand_vt_idx], adj_cand_rt[1][adj_cand_vt_idx]);
               }
             }
+          }
 
+          // All phases
+          if (phase) {
             // Highlight bounding box
-            if (!cursor_drag) {
+            if (!mouse_down) {
               get_highlight_rect();
 
               if (hl_cand_rt && !adj_cand_rt) {
-                // Do not add further effects if the box is currently highlighted
-                if (hl_rt_idx != hl_cand_rt_idx) {
-                  fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_cand_opacity, true);
+                if (hl_rt_idx == hl_cand_rt_idx) {
+                  // Do not add further effects if the box is currently highlighted
+                }
+                else {
+                  // Draw highlight
+                  if (phase == 1 || phase == 2) { is_fg_hl = true; }
+                  if (phase == 3) { is_fg_hl = false; }
+                  fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_cand_opacity, is_fg_hl);
                 }
               }
             }
@@ -318,30 +333,30 @@
 
         // Do something when the left key of the mouse is hit
         function mousedown_canvas_rect(event) {
-          // Phase 1 or Phase 2
-          if (phase == 1 || phase == 2) {
-            // Update highlight
-            if (!(hl_rt && hl_cand_rt_idx == hl_rt_idx) || adj_cand_rt) {
-              hl_rt = null;
-              hl_rt_idx = -1;
-              draw_canvas();
-            }
+          // Set cursor state
+          if (!mouse_down) {
+            raw_rect_x[0] = cursor_x;
+            raw_rect_y[0] = cursor_y;
+            mouse_down = true;
+          }
 
-            // Set bounding box
-            if (!cursor_drag) {
-              raw_rect_x[0] = cursor_x;
-              raw_rect_y[0] = cursor_y;
-              cursor_drag = true;
-            }
-            
+          // Update drawing for highlights whenever a click occurs
+          if (!(hl_rt && hl_cand_rt_idx == hl_rt_idx) || adj_cand_rt) {
+            hl_rt = null;
+            hl_rt_idx = -1;
+            draw_canvas();
+          }
+
+          // Phase 1 and Phase 2 only
+          if (phase == 1 || phase == 2) {
             // Adjust bounding box
             if (adj_cand_rt) {
               raw_rect_x[0] = adj_cand_rt[0][(adj_cand_vt_idx + 2) % 4];
               raw_rect_y[0] = adj_cand_rt[1][(adj_cand_vt_idx + 2) % 4];
 
-              cursor_drag = true;
-              adjust_drag = true;
-              adjust_rt_idx = adj_cand_rt_idx;
+              mouse_down = true;
+              adj_on = true;
+              adj_rt_idx = adj_cand_rt_idx;
 
               draw_canvas();
 
@@ -352,54 +367,67 @@
 
               draw_rect(clean_rect[0], clean_rect[1], adj_cand_ln_color, true);
             }
+          }
 
+          // All phases
+          if (phase) {
             // Highlight boudning box
             if (hl_cand_rt && !adj_cand_rt) {
-              fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, true);
+              // Draw highlight
+              if (phase == 1 || phase == 2) { is_fg_hl = true; }
+              if (phase == 3) { is_fg_hl = false; }
+              fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, is_fg_hl);
             }
           }
         }
 
         // Do something when the left key of the mouse is lifted
         function mouseup_canvas_rect(event) {
-          // Phase 1 or Phase 2
-          if (phase == 1 || phase == 2) {
-            // Set bounding boxes
-            if (cursor_drag) {
-              // Save cursor coordinates
-              raw_rect_x[2] = cursor_x;
-              raw_rect_y[2] = cursor_y;
+          // Response only if the click is on the canvas
+          if (mouse_down) {
+            // Save cursor coordinates
+            raw_rect_x[2] = cursor_x;
+            raw_rect_y[2] = cursor_y;
 
-              if (raw_rect_x[2] != raw_rect_x[0]
-                  || raw_rect_y[2] != raw_rect_y[0]) {
-                // Save to stack
+            // Phase 1 and Phase 2 only
+            if (phase == 1 || phase == 2) {
+              // Save bounding box to stack
+              if (raw_rect_x[2] != raw_rect_x[0] ||
+                  raw_rect_y[2] != raw_rect_y[0]) {
                 save_rect_to_stack();
               }
-              else {
-                // Highlight boudning box
+            }
+
+            // All phases
+            if (phase) {
+              // Highlight boudning box
+              if (raw_rect_x[2] == raw_rect_x[0] &&
+                  raw_rect_y[2] == raw_rect_y[0]) {
                 if (hl_cand_rt) {
                   if (hl_cand_rt_idx != hl_rt_idx) {
                     hl_rt = hl_cand_rt;
                     hl_rt_idx = hl_cand_rt_idx;
                   }
                   else {
-                    // Remove bounding box
-                    remove_rect_from_stack(hl_rt_idx);
-                    hl_rt = null;
-                    hl_rt_idx = -1;
+                    if (phase == 1 || phase == 2) {
+                      // Remove bounding box
+                      remove_rect_from_stack(hl_rt_idx);
+                      hl_rt = null;
+                      hl_rt_idx = -1;
+                    }
                   }
                 }
               }
-
-              // Set cursor state
-              cursor_drag = false;
-              adjust_drag = false;
-              adjust_rt_idx = -1;
-
-              // Display
-              draw_canvas();
-              render();
             }
+
+            // Set cursor state
+            mouse_down = false;
+            adj_on = false;
+            adj_rt_idx = -1;
+
+            // Display
+            draw_canvas();
+            render();
           }
         }
 
@@ -439,14 +467,16 @@
           clean_rect = clean_up_raw_rect();
 
           // Save
-          if (!adjust_drag) {
+          if (!adj_on) {
             if (phase == 1) { return_rect_stack_1[idx].push(clean_rect); };
             if (phase == 2) { return_rect_stack_2[idx].push(clean_rect); };
           }
           else {
-            if (phase == 1) { return_rect_stack_1[idx][adjust_rt_idx] = clean_rect; };
-            if (phase == 2) { return_rect_stack_2[idx][adjust_rt_idx] = clean_rect; };
+            if (phase == 1) { return_rect_stack_1[idx][adj_rt_idx] = clean_rect; };
+            if (phase == 2) { return_rect_stack_2[idx][adj_rt_idx] = clean_rect; };
           }
+
+          // TODO: sort the stack by rectange areas
         }
 
         // Reparse rect data into return_rect
@@ -557,6 +587,7 @@
         function get_highlight_rect() {
           if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; };
           if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; };
+          if (phase == 3) { return_rect_stack = return_rect_stack_2[idx].concat(return_rect_stack_1[idx]); };
 
           hl_cand_rt = null;
           hl_cand_rt_idx = -1;
@@ -576,6 +607,14 @@
           if (hl_cand_rt) {
             if (phase == 1) { hl_cand_ln_color = ln_color_1; }
             if (phase == 2) { hl_cand_ln_color = ln_color_2; }
+            if (phase == 3) {
+              if (hl_cand_rt_idx >= return_rect_stack_2[idx].length) {
+                hl_cand_ln_color = ln_color_1;
+              }
+              else {
+                hl_cand_ln_color = ln_color_2;
+              }
+            }
           }
         }
 
@@ -613,6 +652,10 @@
           if (p == 1 || p == 2 || p ==3) {
             phase = p;
 
+            // Reset variables
+            mouse_down = false;
+            adj_on = false;
+            adj_rt_idx = -1;
             hl_rt = null;
             hl_rt_idx = -1;
           }
