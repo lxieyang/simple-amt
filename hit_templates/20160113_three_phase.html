@@ -205,6 +205,7 @@
         var hl_cand_ln_color = null;
         var hl_cand_opacity = 0.3;
         var hl_down_opacity = 0.5;
+        var hl_draw = true;
 
 
         // Initalizing the canvas.
@@ -256,7 +257,7 @@
           })
 
           // Draw highlight box
-          if (hl_rt) {
+          if (hl_draw && hl_rt) {
             if (phase == 1) { hl_ln_color = ln_color_1; }
             if (phase == 2) { hl_ln_color = ln_color_2; }
             if (phase == 3) {
@@ -306,7 +307,7 @@
             }
           }
 
-          // All phases
+          // All Phases
           if (phase) {
             // Highlight bounding box
             if (!mouse_down) {
@@ -341,13 +342,6 @@
             mouse_down = true;
           }
 
-          // Update drawing for highlights whenever a click occurs
-          if (!(hl_rt && hl_cand_rt_idx == hl_rt_idx) || adj_cand_rt) {
-            hl_rt = null;
-            hl_rt_idx = -1;
-            draw_canvas();
-          }
-
           // Phase 1 and Phase 2 only
           if (phase == 1 || phase == 2) {
             // Adjust bounding box
@@ -358,6 +352,8 @@
               mouse_down = true;
               adj_on = true;
               adj_rt_idx = adj_cand_rt_idx;
+              hl_rt = null;
+              hl_rt_idx = -1;
 
               draw_canvas();
 
@@ -370,14 +366,26 @@
             }
           }
 
-          // All phases
+          // All Phases
           if (phase) {
-            // Highlight boudning box
-            if (hl_cand_rt && !adj_cand_rt) {
-              // Draw highlight
-              if (phase == 1 || phase == 2) { is_fg_hl = true; }
-              if (phase == 3) { is_fg_hl = false; }
-              fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, is_fg_hl);
+            // Highlight bounding box
+            if (!adj_cand_rt) {
+              if (!hl_cand_rt) {
+                hl_rt = null;
+                hl_rt_idx = -1;
+                draw_canvas();
+              }
+              else {
+                if (hl_cand_rt_idx != hl_rt_idx) {
+                  hl_draw = false;
+                  draw_canvas();
+                  hl_draw = true;
+                }
+                // Draw highlight
+                if (phase == 1 || phase == 2) { is_fg_hl = true; }
+                if (phase == 3) { is_fg_hl = false; }
+                fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, is_fg_hl);
+              }
             }
           }
         }
@@ -405,16 +413,34 @@
               if (raw_rect_x[2] == raw_rect_x[0] &&
                   raw_rect_y[2] == raw_rect_y[0]) {
                 if (hl_cand_rt) {
-                  if (hl_cand_rt_idx != hl_rt_idx) {
-                    hl_rt = hl_cand_rt;
-                    hl_rt_idx = hl_cand_rt_idx;
-                  }
-                  else {
-                    if (phase == 1 || phase == 2) {
+                  // Phase 1 and Phase 2 only
+                  if (phase == 1 || phase == 2) {
+                    if (hl_cand_rt_idx != hl_rt_idx) {
+                      // Change highlighted box
+                      hl_rt = hl_cand_rt;
+                      hl_rt_idx = hl_cand_rt_idx;
+                    }
+                    else {
                       // Remove bounding box
                       remove_rect_from_stack(hl_rt_idx);
                       hl_rt = null;
                       hl_rt_idx = -1;
+                    }
+                  }
+                  // Phase 3 only
+                  if (phase == 3) {
+                    if (hl_cand_rt_idx != hl_rt_idx) {
+                      if ((hl_rt_idx >= return_rect_stack_1[idx].length &&
+                           hl_cand_rt_idx >= return_rect_stack_1[idx].length) ||
+                          (hl_rt_idx < return_rect_stack_1[idx].length &&
+                           hl_cand_rt_idx < return_rect_stack_1[idx].length)) {
+                        // Change highlighted box
+                        hl_rt = hl_cand_rt;
+                        hl_rt_idx = hl_cand_rt_idx;
+                      }
+                      else {
+                        // TODO: Add connection
+                      }
                     }
                   }
                 }
