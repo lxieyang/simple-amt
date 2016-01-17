@@ -377,9 +377,19 @@
               }
               else {
                 if (hl_cand_rt_idx != hl_rt_idx) {
-                  hl_draw = false;
-                  draw_canvas();
-                  hl_draw = true;
+                  if (phase != 3 ||
+                      ((hl_rt_idx >= return_rect_stack_2[idx].length &&
+                        hl_cand_rt_idx >= return_rect_stack_2[idx].length) ||
+                       (hl_rt_idx < return_rect_stack_2[idx].length &&
+                        hl_cand_rt_idx < return_rect_stack_2[idx].length))) {
+                    // Create instant effect only if not adding connection
+                    hl_draw = false;
+                    draw_canvas();
+                    hl_draw = true;
+                  }
+                  else {
+                    // Create effect for adding connection
+                  }
                 }
                 // Draw highlight
                 if (phase == 1 || phase == 2) { is_fg_hl = true; }
@@ -416,12 +426,12 @@
                   // Phase 1 and Phase 2 only
                   if (phase == 1 || phase == 2) {
                     if (hl_cand_rt_idx != hl_rt_idx) {
-                      // Change highlighted box
+                      // Highlight box
                       hl_rt = hl_cand_rt;
                       hl_rt_idx = hl_cand_rt_idx;
                     }
                     else {
-                      // Remove bounding box
+                      // Remove box
                       remove_rect_from_stack(hl_rt_idx);
                       hl_rt = null;
                       hl_rt_idx = -1;
@@ -430,17 +440,26 @@
                   // Phase 3 only
                   if (phase == 3) {
                     if (hl_cand_rt_idx != hl_rt_idx) {
-                      if ((hl_rt_idx >= return_rect_stack_1[idx].length &&
-                           hl_cand_rt_idx >= return_rect_stack_1[idx].length) ||
-                          (hl_rt_idx < return_rect_stack_1[idx].length &&
-                           hl_cand_rt_idx < return_rect_stack_1[idx].length)) {
-                        // Change highlighted box
+                      if ((!hl_rt) ||
+                          ((hl_rt_idx >= return_rect_stack_2[idx].length &&
+                            hl_cand_rt_idx >= return_rect_stack_2[idx].length) ||
+                           (hl_rt_idx < return_rect_stack_2[idx].length &&
+                            hl_cand_rt_idx < return_rect_stack_2[idx].length))) {
+                        // highlight box
                         hl_rt = hl_cand_rt;
                         hl_rt_idx = hl_cand_rt_idx;
                       }
                       else {
-                        // TODO: Add connection
+                        // Add connection
+                        // add_connection();
+                        hl_rt = null;
+                        hl_rt_idx = -1;
                       }
+                    }
+                    else {
+                      // Disable highlighted box
+                      hl_rt = null;
+                      hl_rt_idx = -1;
                     }
                   }
                 }
