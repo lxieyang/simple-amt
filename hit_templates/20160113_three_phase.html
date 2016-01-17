@@ -171,6 +171,7 @@
         var phase = 1;
 
         // returning rectangle stacks
+        //   Rectangles in each stack are sorted by area in ascending order
         var return_rect_stack_1 = [];  // person
         var return_rect_stack_2 = [];  // object
 
@@ -468,15 +469,12 @@
 
           // Save
           if (!adj_on) {
-            if (phase == 1) { return_rect_stack_1[idx].push(clean_rect); };
-            if (phase == 2) { return_rect_stack_2[idx].push(clean_rect); };
+            add_one_rect_to_stack(clean_rect)
           }
           else {
-            if (phase == 1) { return_rect_stack_1[idx][adj_rt_idx] = clean_rect; };
-            if (phase == 2) { return_rect_stack_2[idx][adj_rt_idx] = clean_rect; };
+            remove_rect_from_stack(rt_idx);
+            adj_rt_idx = add_one_rect_to_stack(clean_rect);
           }
-
-          // TODO: sort the stack by rectange areas
         }
 
         // Reparse rect data into return_rect
@@ -512,6 +510,35 @@
             return [clean_rect_x, clean_rect_y];
         }
 
+        // Add one rect to stack. Sort the stack by rect area in ascending order.
+        function add_one_rect_to_stack(rect) {
+          if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; }
+          if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; }
+
+          if (return_rect_stack == 0) {
+            return_rect_stack.push(rect);
+            return 0;
+          }
+          else {
+            area = get_rect_area(rect);
+            idx_in = return_rect_stack.length;
+            for (var i = 0; i < return_rect_stack.length; i++) {
+              area_i = get_rect_area(return_rect_stack[i]);
+              if (area_i > area) {
+                idx_in = i;
+                break;
+              }
+            }
+            return_rect_stack.splice(idx_in, 0, rect);
+            return idx_in;
+          }
+        }
+
+        // Compute rect area
+        function get_rect_area(rect) {
+          return (rect[0][2] - rect[0][0]) * (rect[1][2] - rect[1][0]);
+        }
+
         // Draw rectangle edges and vertices for Phase 1 and 2
         function draw_rect(clean_rect_x, clean_rect_y, ln_color, is_fg) {
           // Set line style
@@ -527,7 +554,7 @@
           }
 
           // Draw the edges
-          for(i = 0; i < 4; i++) {
+          for (var i = 0; i < 4; i++) {
             ctx.beginPath();
             ctx.moveTo(clean_rect_x[i % 4], clean_rect_y[i % 4]);
             ctx.lineTo(clean_rect_x[(i + 1) % 4], clean_rect_y[(i + 1) % 4]);
@@ -536,7 +563,7 @@
 
           // Draw the vertices
           if (is_fg) {
-            for(i = 0; i < 4; i++) {
+            for (var i = 0; i < 4; i++) {
               ctx.fillRect(clean_rect_x[i] - vt_width, clean_rect_y[i] - vt_width, 2 * vt_width, 2 * vt_width);
             }
           }
@@ -591,15 +618,13 @@
 
           hl_cand_rt = null;
           hl_cand_rt_idx = -1;
-          t_ret_rect = return_rect_stack.slice(0)
-          t_ret_rect.reverse()
-          $.each(t_ret_rect, function(index, ret_rect) {
+          $.each(return_rect_stack, function(index, ret_rect) {
             if (cursor_x >= ret_rect[0][0]
                 && cursor_y >= ret_rect[1][0]
                 && cursor_x <= ret_rect[0][2]
                 && cursor_y <= ret_rect[1][2]) {
               hl_cand_rt = ret_rect;
-              hl_cand_rt_idx = t_ret_rect.length - 1 - index;
+              hl_cand_rt_idx = index;
               return false;
             }
           })
