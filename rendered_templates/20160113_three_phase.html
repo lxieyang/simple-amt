@@ -287,11 +287,13 @@
           // Draw the image
           ctx.clearRect(0, 0, canvas_fix.width, canvas_fix.height);
           draw_image();
- 
+    
+          
           if (phase == 1) { is_fg_1 = true; is_fg_2 = false; is_fg_hl = true; };
           if (phase == 2) { is_fg_1 = false; is_fg_2 = true; is_fg_hl = true; };
           if (phase == 3) { is_fg_1 = false; is_fg_2 = false; is_fg_hl = false; };
-
+          
+          
           // Draw boxes in stack 1
           $.each(return_rect_stack_1[idx], function(index, clean_rect) {
             // Skip the one that is currently being adjusted
@@ -874,11 +876,11 @@
           $('#phs3-btn').prop('disabled', false);
           
           $('html').keydown(function(event){
-            if(event.which == 39)
+            if(event.which == 39)   // right key
             {
                 set_idx(idx + 1);
             }
-            else if(event.which == 37)
+            else if(event.which == 37)  // left key
             {
                 set_idx(idx - 1);
             }
