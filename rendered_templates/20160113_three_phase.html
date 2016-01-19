@@ -1,0 +1,887 @@
+<html>
+  <head>
+    <title>Locate the human being and the object involved in certain activity in the picture</title>
+    <!-- simpleamt depends on these libraries -->
+    <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js'></script>
+    <!-- end of required libraries -->
+    <script src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js'></script>
+    <link href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'>
+    <style>
+      #text-area {
+        margin: 5px;
+        font-size: 9pt;
+        height: 80px;
+      }
+      #button-div {
+        margin-bottom: 5px;
+      }
+      #counter {
+        margin: 10px;
+        font-size: 20pt;
+        font-weight: bold;
+      }
+      img {
+        height: 350px;
+      }
+      #wrap {
+         width:1200px;
+         margin:0 auto;
+      }
+      #left_col {
+        margin: 0 0 0 20px;
+        float:left;
+        width:810px;
+      }
+      #right_col {
+        margin: 0 20px 0 0;
+        float:right;
+        width:330px;
+      }
+    </style>
+
+  </head>
+  <body>
+
+    <!-- 
+    button colors:
+      btn-default  white
+      btn-primary  blue
+      btn-success  green
+      btn-info     cyan
+      btn-warning  yellow
+      btn-danger   red
+      btn-link     white (hyperlink)
+      btn-group    gray
+    -->
+    <div class='container' style="width: 1200px; margin-bottom: 10pt">
+      <div class='panel panel-primary'>
+        <div class='panel-heading' style="color:#fff; background-color:#5cb85c; border-color:#4cae4c;"><font size='3'><strong>HIT Starts Here</strong></font></div>
+      </div>
+    </div>
+
+    <div class='container' style="display: table; width: 1000px; height: 180px; border:1px solid black; background-color: #f5f5f5;">
+      <div style="display: table-cell; vertical-align: middle;">
+        <font size='5'>
+          <p style="margin-bottom: 7pt;">
+            There is a person <strong><u>riding a bicycle</u></strong> at the moment this picture is taken.
+          </p>
+          <p style="margin-bottom: 0pt;">
+            Please draw <strong>TIGHT</strong> boxes:
+          </p>
+          <ol style="margin-left: 20px;">
+            <li>around the <strong>person</strong>.</li>
+            <li>around the <strong>bicycle</strong> he or she is riding.</li>
+          </ol>
+        </font>
+      </div>
+    </div>
+    <br>
+
+    <div id="wrap">
+      <div id="left_col">
+        <fieldset>
+            <div style="display: table; width: 810px; height: 810px; border:1px solid black;">
+              <div style="display: table-cell; vertical-align: middle;">
+                <!-- image -->
+                <center><canvas id='segmentation_canvas' width=600 height=400></canvas></center>
+              </div>
+            </div>
+        </fieldset>
+      </div>
+
+      <div id="right_col">
+        <fieldset>
+          <div style="display: table; width: 330px; height: 810px; border:1px solid black;">
+            <!--<div style="display: table-cell; vertical-align: middle;">-->
+            <div style="display: table-cell;">
+              <!-- phase switch -->
+              <div class='col-xs-12 text-center'>
+                <center>
+                  <button id='phs1-btn' class='btn btn-lg btn-primary' style="width: 67pt; font-size:16px" disabled>Phase 1</button> &nbsp;
+                  <button id='phs2-btn' class='btn btn-lg btn-success' style="width: 67pt; font-size:16px" disabled>Phase 2</button> &nbsp;
+                  <button id='phs3-btn' class='btn btn-lg btn-warning' style="width: 67pt; font-size:16px" disabled>Phase 3</button>
+                </center>
+                <p style="margin-bottom: 10pt;"></p>
+              </div>              
+              <!-- text area -->
+              <div class='col-xs-12 text-center'>
+                <center>
+                  <textarea id='text-area' class='form-control tb-margin' style="margin: 0pt; height: 240pt; margin-bottom: 30pt; resize: none;" disabled></textarea>
+                </center>
+              </div>
+              <!-- add / remove / reset -->
+              <div class='col-xs-12 text-center'>
+                <center>
+                  <button id='add-btn' class='btn btn-lg btn-primary' style="width: 170pt; margin-bottom: 3pt" disabled>Add One Instance</button><br>
+                  <button id='remove-btn' class='btn btn-lg btn-primary' style="width: 170pt; margin-bottom: 8pt" disabled>Remove One Instance</button><br>
+                  <button id='reset-btn' class='btn btn-lg btn-danger' style="width: 170pt; margin-bottom: 30pt;" disabled>Reset</button>
+                </center>
+              </div>
+              <p style="margin-bottom: 5pt;"></p>
+              <!-- back / next -->
+              <div class='col-xs-12 text-center' id='button-div'>
+                <button id='prev-btn' class='btn btn-lg btn-primary' style="width: 79pt; margin-bottom: 3pt" disabled>Back</button> &nbsp;&nbsp;
+                <button id='next-btn' class='btn btn-lg btn-primary' style="width: 79pt; margin-bottom: 3pt" disabled>Next</button>
+                <p>
+                  <span id='counter'>
+                    <span class='counter-top'></span> / <span class='counter-bottom'></span>
+                  </span>
+                </p>
+                <p style="margin-bottom: 20pt;"></p>
+              </div>
+              <!-- submit -->
+              <script type='text/json' id='input'>
+  
+</script>
+<form id='results-form' method='post' action='dummy' class='text-center'>
+  <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+  <input type='hidden' value='' name='output' id='output'/>
+  <input type='submit' class='btn btn-lg btn-success' id='submit-btn' value='Submit' disabled/>          
+</form>
+<script>
+  var simpleamt = (function() {
+    
+    // Copied from http://james.padolsey.com/javascript/bujs-1-getparameterbyname/
+    function getUrlParam(name) {
+      var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+      return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
+    }
+
+    function getInput(default_input) {
+      if (typeof(default_input) === 'undefined') default_input = null;
+      try {
+        return JSON.parse($('#input').html());
+      } catch (e) {
+        return default_input;
+      }
+    }
+
+    function setOutput(output) {
+      $('#output').val(JSON.stringify(output));
+    }
+
+    function isPreview() {
+      var assignment_id = getUrlParam('assignmentId');
+      if (assignment_id === null) return false;
+      return assignment_id == 'ASSIGNMENT_ID_NOT_AVAILABLE';
+    }
+
+    function setupSubmit() {
+      var submit_to = getUrlParam('turkSubmitTo');
+      $('#results-form').attr('action', submit_to + '/mturk/externalSubmit');                      
+      $('#assignmentId').val(getUrlParam('assignmentId'));
+    }
+
+    return {
+      getInput: getInput,
+      setOutput: setOutput,
+      isPreview: isPreview,
+      setupSubmit: setupSubmit,
+    }
+
+  })();
+</script>
+              <!--<link rel="import" href="simpleamt.html">-->
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <script>
+      $(function() {
+
+        // Define some default input.
+        var DEFAULT_INPUT = [
+          'http://napoli18.eecs.umich.edu/public_html/hico_20150920/images/train2015/HICO_train2015_00000019.jpg',
+          'http://napoli18.eecs.umich.edu/public_html/hico_20150920/images/train2015/HICO_train2015_00000202.jpg',
+          'http://napoli18.eecs.umich.edu/public_html/hico_20150920/images/train2015/HICO_train2015_00000667.jpg',
+          'http://napoli18.eecs.umich.edu/public_html/hico_20150920/images/train2015/HICO_train2015_00001538.jpg'
+           ];
+
+        var input = null;
+
+        // some variables to track state of the HIT.
+        var idx = 0;
+        var enabled = false;
+
+        // global variables for the page
+        var img;
+        var canvas_fix;
+        var ctx;
+
+        // cursor state
+        var cursor_x = 0;
+        var cursor_y = 0;
+        var mouse_down = false;
+
+        // task phase
+        var phase = 1;
+
+        // returning rectangle stacks
+        //   Rectangles in each stack are sorted by area in ascending order
+        var return_rect_stack_1 = [];  // person
+        var return_rect_stack_2 = [];  // object
+
+        // temporary variable for drawing rectangles
+        var raw_rect_x = new Array(4);
+        var raw_rect_y = new Array(4);
+
+        // drawing styles
+        var ln_color_1 = 'blue';
+        var ln_color_2 = 'lime';
+        var vt_color = 'red';
+        var ln_width_fg = 4.0;
+        var ln_width_bg = 2.0;
+        var vt_width = 4.0;
+        var vt_width_bold = 8.0;
+
+        // bounding box adjustment
+        var adj_on = false;
+        var adj_rt_idx = -1
+        var adj_cand_rt = null;
+        var adj_cand_rt_idx = -1;  // required for draw_canvas()
+        var adj_cand_ln_color = null;
+        var adj_cand_vt_idx = -1;
+        var adj_cand_vt_thres = 8;
+
+        // bounding box highlight
+        var hl_rt = null;
+        var hl_rt_idx = -1;
+        var hl_cand_rt = null;
+        var hl_cand_rt_idx = -1;
+        var hl_cand_ln_color = null;
+        var hl_cand_opacity = 0.3;
+        var hl_down_opacity = 0.5;
+        var hl_draw = true;
+
+
+        // Initalizing the canvas.
+        function init_canvas() {
+          // get canvas
+          img = new Image();
+          canvas_fix = document.getElementById('segmentation_canvas');
+          ctx = canvas_fix.getContext('2d');
+
+          // change the size of the canvas to the image size
+          img.onload = function() {
+            canvas_fix.width = this.width;
+            canvas_fix.height = this.height;
+            draw_canvas();
+          }
+          img.src = input[idx];
+
+          // monitor user input
+          canvas_fix.onmousemove = mousemove_canvas_rect;
+          canvas_fix.onmousedown = mousedown_canvas_rect;
+          canvas_fix.onmouseup = mouseup_canvas_rect;
+
+          // render
+          render();
+        }
+
+        // Draw canvas.
+        function draw_canvas() {
+          // Draw the image
+          ctx.clearRect(0, 0, canvas_fix.width, canvas_fix.height);
+          draw_image();
+ 
+          if (phase == 1) { is_fg_1 = true; is_fg_2 = false; is_fg_hl = true; };
+          if (phase == 2) { is_fg_1 = false; is_fg_2 = true; is_fg_hl = true; };
+          if (phase == 3) { is_fg_1 = false; is_fg_2 = false; is_fg_hl = false; };
+
+          // Draw boxes in stack 1
+          $.each(return_rect_stack_1[idx], function(index, clean_rect) {
+            // Skip the one that is currently being adjusted
+            if (phase == 1 && adj_on && index == adj_rt_idx) { return true; }
+            draw_rect(clean_rect[0], clean_rect[1], ln_color_1, is_fg_1);
+          })
+
+          // Draw boxes in stack 2
+          $.each(return_rect_stack_2[idx], function(index, clean_rect) {
+            // Skip the one that is currently being adjusted
+            if (phase == 2 && adj_on && index == adj_rt_idx) { return true; }
+            draw_rect(clean_rect[0], clean_rect[1], ln_color_2, is_fg_2);
+          })
+
+          // Draw highlight box
+          if (hl_draw && hl_rt) {
+            if (phase == 1) { hl_ln_color = ln_color_1; }
+            if (phase == 2) { hl_ln_color = ln_color_2; }
+            if (phase == 3) {
+              if (hl_rt_idx >= return_rect_stack_2[idx].length) {
+                hl_ln_color = ln_color_1;
+              }
+              else {
+                hl_ln_color = ln_color_2;
+              }
+            }
+            fill_rect(hl_rt[0], hl_rt[1], hl_ln_color, hl_down_opacity, is_fg_hl);
+          }
+        }
+
+        // Draw image.
+        function draw_image() {
+          ctx.drawImage(img, 0, 0, canvas_fix.width, canvas_fix.height);
+        }
+
+        // Do something as the cursor moves across the canvas
+        function mousemove_canvas_rect(event) {
+          draw_canvas();
+
+          // Get current cursor coordinates
+          grab_xy(event);
+
+          // Phase 1 and Phase 2 only
+          if (phase == 1 || phase == 2) {
+            // Draw bounding box
+            if (mouse_down) {
+              raw_rect_x[2] = cursor_x;
+              raw_rect_y[2] = cursor_y;
+              
+              clean_rect = clean_up_raw_rect();
+
+              if (phase == 1) { draw_rect(clean_rect[0], clean_rect[1], ln_color_1, true); }
+              if (phase == 2) { draw_rect(clean_rect[0], clean_rect[1], ln_color_2, true); }
+            }
+
+            // Adjust bounding box
+            if (!mouse_down) {
+              get_closest_vertex_idx();
+
+              if (adj_cand_rt) {
+                bold_point(adj_cand_rt[0][adj_cand_vt_idx], adj_cand_rt[1][adj_cand_vt_idx]);
+              }
+            }
+          }
+
+          // All Phases
+          if (phase) {
+            // Highlight bounding box
+            if (!mouse_down) {
+              get_highlight_rect();
+
+              if (hl_cand_rt && !adj_cand_rt) {
+                if (hl_rt_idx == hl_cand_rt_idx) {
+                  // Do not add further effects if the box is currently highlighted
+                }
+                else {
+                  // Draw highlight
+                  if (phase == 1 || phase == 2) { is_fg_hl = true; }
+                  if (phase == 3) { is_fg_hl = false; }
+                  fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_cand_opacity, is_fg_hl);
+                }
+              }
+            }
+            else {
+              // Make sure highlight is always off when the cursor starts being dragged
+              hl_rt = null;
+              hl_rt_idx = -1;
+            }
+          }
+        }
+
+        // Do something when the left key of the mouse is hit
+        function mousedown_canvas_rect(event) {
+          // Set cursor state
+          if (!mouse_down) {
+            raw_rect_x[0] = cursor_x;
+            raw_rect_y[0] = cursor_y;
+            mouse_down = true;
+          }
+
+          // Phase 1 and Phase 2 only
+          if (phase == 1 || phase == 2) {
+            // Adjust bounding box
+            if (adj_cand_rt) {
+              raw_rect_x[0] = adj_cand_rt[0][(adj_cand_vt_idx + 2) % 4];
+              raw_rect_y[0] = adj_cand_rt[1][(adj_cand_vt_idx + 2) % 4];
+
+              mouse_down = true;
+              adj_on = true;
+              adj_rt_idx = adj_cand_rt_idx;
+              hl_rt = null;
+              hl_rt_idx = -1;
+
+              draw_canvas();
+
+              raw_rect_x[2] = cursor_x;
+              raw_rect_y[2] = cursor_y;
+
+              clean_rect = clean_up_raw_rect();
+
+              draw_rect(clean_rect[0], clean_rect[1], adj_cand_ln_color, true);
+            }
+          }
+
+          // All Phases
+          if (phase) {
+            // Highlight bounding box
+            if (!adj_cand_rt) {
+              if (!hl_cand_rt) {
+                hl_rt = null;
+                hl_rt_idx = -1;
+                draw_canvas();
+              }
+              else {
+                if (hl_cand_rt_idx != hl_rt_idx) {
+                  if (phase != 3 ||
+                      ((hl_rt_idx >= return_rect_stack_2[idx].length &&
+                        hl_cand_rt_idx >= return_rect_stack_2[idx].length) ||
+                       (hl_rt_idx < return_rect_stack_2[idx].length &&
+                        hl_cand_rt_idx < return_rect_stack_2[idx].length))) {
+                    // Create instant effect only if not adding connection
+                    hl_draw = false;
+                    draw_canvas();
+                    hl_draw = true;
+                  }
+                  else {
+                    // Create effect for adding connection
+                  }
+                }
+                // Draw highlight
+                if (phase == 1 || phase == 2) { is_fg_hl = true; }
+                if (phase == 3) { is_fg_hl = false; }
+                fill_rect(hl_cand_rt[0], hl_cand_rt[1], hl_cand_ln_color, hl_down_opacity, is_fg_hl);
+              }
+            }
+          }
+        }
+
+        // Do something when the left key of the mouse is lifted
+        function mouseup_canvas_rect(event) {
+          // Response only if the click is on the canvas
+          if (mouse_down) {
+            // Save cursor coordinates
+            raw_rect_x[2] = cursor_x;
+            raw_rect_y[2] = cursor_y;
+
+            // Phase 1 and Phase 2 only
+            if (phase == 1 || phase == 2) {
+              // Save bounding box to stack
+              if (raw_rect_x[2] != raw_rect_x[0] ||
+                  raw_rect_y[2] != raw_rect_y[0]) {
+                save_rect_to_stack();
+              }
+            }
+
+            // All phases
+            if (phase) {
+              // Highlight boudning box
+              if (raw_rect_x[2] == raw_rect_x[0] &&
+                  raw_rect_y[2] == raw_rect_y[0]) {
+                if (hl_cand_rt) {
+                  // Phase 1 and Phase 2 only
+                  if (phase == 1 || phase == 2) {
+                    if (hl_cand_rt_idx != hl_rt_idx) {
+                      // Highlight box
+                      hl_rt = hl_cand_rt;
+                      hl_rt_idx = hl_cand_rt_idx;
+                    }
+                    else {
+                      // Remove box
+                      remove_rect_from_stack(hl_rt_idx);
+                      hl_rt = null;
+                      hl_rt_idx = -1;
+                    }
+                  }
+                  // Phase 3 only
+                  if (phase == 3) {
+                    if (hl_cand_rt_idx != hl_rt_idx) {
+                      if ((!hl_rt) ||
+                          ((hl_rt_idx >= return_rect_stack_2[idx].length &&
+                            hl_cand_rt_idx >= return_rect_stack_2[idx].length) ||
+                           (hl_rt_idx < return_rect_stack_2[idx].length &&
+                            hl_cand_rt_idx < return_rect_stack_2[idx].length))) {
+                        // highlight box
+                        hl_rt = hl_cand_rt;
+                        hl_rt_idx = hl_cand_rt_idx;
+                      }
+                      else {
+                        // Add connection
+                        // add_connection();
+                        hl_rt = null;
+                        hl_rt_idx = -1;
+                      }
+                    }
+                    else {
+                      // Disable highlighted box
+                      hl_rt = null;
+                      hl_rt_idx = -1;
+                    }
+                  }
+                }
+              }
+            }
+
+            // Set cursor state
+            mouse_down = false;
+            adj_on = false;
+            adj_rt_idx = -1;
+
+            // Display
+            draw_canvas();
+            render();
+          }
+        }
+
+        // Return the current point of the cursor.
+        function grab_xy(event) {
+          var ev = event || window.event;
+
+          var IE = document.all?true:false;
+          if (IE) { 
+            // Grab the x-y pos if browser is IE
+            cx = ev.clientX + document.body.scrollLeft;
+            cy = ev.clientY + document.body.scrollTop;
+          }
+          else {  
+            // Grab the x-y pos if browser is NS
+            cx = ev.pageX;
+            cy = ev.pageY;
+          }
+  
+          cx = cx - canvas_fix.offsetLeft;
+          cy = cy - canvas_fix.offsetTop;
+          if (cx < 0) { cx = 0; };
+          if (cy < 0) { cy = 0; };
+          if (cx > canvas_fix.width) { cx = canvas_fix.width };
+          if (cy > canvas_fix.height) { cy = canvas_fix.height };
+
+          cursor_x = Math.floor(cx);
+          cursor_y = Math.floor(cy);
+        }
+
+        // Save raw_rect to stack
+        function save_rect_to_stack() {
+          // Assertion
+          if (phase != 1 && phase != 2) { alert('phase error'); };
+
+          // Clean up rect
+          clean_rect = clean_up_raw_rect();
+
+          // Save
+          if (!adj_on) {
+            add_one_rect_to_stack(clean_rect)
+          }
+          else {
+            remove_rect_from_stack(rt_idx);
+            adj_rt_idx = add_one_rect_to_stack(clean_rect);
+          }
+        }
+
+        // Reparse rect data into return_rect
+        function clean_up_raw_rect() {
+            // Complete raw rect
+            raw_rect_x[1] = raw_rect_x[0];
+            raw_rect_y[1] = raw_rect_y[2];
+            raw_rect_x[3] = raw_rect_x[2];
+            raw_rect_y[3] = raw_rect_y[0];
+
+            // Get min id
+            var min_val = raw_rect_x[0] + raw_rect_y[0];
+            var min_loc = 0;
+            for (var i = 1; i < 4; i++) {
+                if (min_val > raw_rect_x[i] + raw_rect_y[i]) {
+                    min_val = raw_rect_x[i] + raw_rect_y[i];
+                    min_loc = i;
+                }
+            }
+
+            // Create cleaned rect
+            var clean_rect_x = new Array(4);
+            var clean_rect_y = new Array(4);
+            clean_rect_x[0] = raw_rect_x[min_loc];
+            clean_rect_y[0] = raw_rect_y[min_loc];
+            clean_rect_x[2] = raw_rect_x[(min_loc + 2) % 4];
+            clean_rect_y[2] = raw_rect_y[(min_loc + 2) % 4];
+            clean_rect_x[1] = clean_rect_x[0];
+            clean_rect_y[1] = clean_rect_y[2];
+            clean_rect_x[3] = clean_rect_x[2];
+            clean_rect_y[3] = clean_rect_y[0];
+            
+            return [clean_rect_x, clean_rect_y];
+        }
+
+        // Add one rect to stack. Sort the stack by rect area in ascending order.
+        function add_one_rect_to_stack(rect) {
+          if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; }
+          if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; }
+
+          if (return_rect_stack == 0) {
+            return_rect_stack.push(rect);
+            return 0;
+          }
+          else {
+            area = get_rect_area(rect);
+            idx_in = return_rect_stack.length;
+            for (var i = 0; i < return_rect_stack.length; i++) {
+              area_i = get_rect_area(return_rect_stack[i]);
+              if (area_i > area) {
+                idx_in = i;
+                break;
+              }
+            }
+            return_rect_stack.splice(idx_in, 0, rect);
+            return idx_in;
+          }
+        }
+
+        // Compute rect area
+        function get_rect_area(rect) {
+          return (rect[0][2] - rect[0][0]) * (rect[1][2] - rect[1][0]);
+        }
+
+        // Draw rectangle edges and vertices for Phase 1 and 2
+        function draw_rect(clean_rect_x, clean_rect_y, ln_color, is_fg) {
+          // Set line style
+          ctx.strokeStyle = ln_color;
+          if (is_fg) {
+            // Draw both edges and vertices
+            ctx.lineWidth = ln_width_fg;
+            ctx.fillStyle = vt_color;
+          }
+          else {
+            // Only draw edges
+            ctx.lineWidth = ln_width_bg;
+          }
+
+          // Draw the edges
+          for (var i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(clean_rect_x[i % 4], clean_rect_y[i % 4]);
+            ctx.lineTo(clean_rect_x[(i + 1) % 4], clean_rect_y[(i + 1) % 4]);
+            ctx.stroke();
+          }
+
+          // Draw the vertices
+          if (is_fg) {
+            for (var i = 0; i < 4; i++) {
+              ctx.fillRect(clean_rect_x[i] - vt_width, clean_rect_y[i] - vt_width, 2 * vt_width, 2 * vt_width);
+            }
+          }
+        }
+
+        // Detect if close to one of the vertices
+        function get_closest_vertex_idx() {
+          rt_idx = -1;
+          vt_idx = -1;
+          min_dist = 100000000;
+
+          if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; };
+          if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; };
+
+          $.each(return_rect_stack, function(index, clean_rect) {
+            for (var i = 0; i < 4; i++) {
+              temp_dist = Math.pow(cursor_x - clean_rect[0][i], 2) + Math.pow(cursor_y - clean_rect[1][i], 2)
+              if (temp_dist < min_dist) {
+                rt_idx = index;
+                vt_idx = i;
+                min_dist = temp_dist;
+              }
+            }
+          })
+
+          if (min_dist < Math.pow(adj_cand_vt_thres, 2)) {
+            adj_cand_rt = return_rect_stack[rt_idx];
+            adj_cand_rt_idx = rt_idx;
+            adj_cand_vt_idx = vt_idx;
+            if (phase == 1) { adj_cand_ln_color = ln_color_1; }
+            if (phase == 2) { adj_cand_ln_color = ln_color_2; }
+          }
+          else {
+            adj_cand_rt = null;
+            adj_cand_rt_idx = -1;
+            adj_cand_vt_idx = -1;
+            adj_cand_ln_color = null;
+          }
+        }
+
+        // Make the target vertex bigger
+        function bold_point(x, y) {
+            ctx.fillStyle = vt_color;
+            ctx.fillRect(x - vt_width_bold, y - vt_width_bold, 2 * vt_width_bold, 2 * vt_width_bold);
+        }
+
+        // Get highlighted rect. Use the newer one if there are overlapping boxes.
+        function get_highlight_rect() {
+          if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; };
+          if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; };
+          if (phase == 3) { return_rect_stack = return_rect_stack_2[idx].concat(return_rect_stack_1[idx]); };
+
+          hl_cand_rt = null;
+          hl_cand_rt_idx = -1;
+          $.each(return_rect_stack, function(index, ret_rect) {
+            if (cursor_x >= ret_rect[0][0]
+                && cursor_y >= ret_rect[1][0]
+                && cursor_x <= ret_rect[0][2]
+                && cursor_y <= ret_rect[1][2]) {
+              hl_cand_rt = ret_rect;
+              hl_cand_rt_idx = index;
+              return false;
+            }
+          })
+
+          if (hl_cand_rt) {
+            if (phase == 1) { hl_cand_ln_color = ln_color_1; }
+            if (phase == 2) { hl_cand_ln_color = ln_color_2; }
+            if (phase == 3) {
+              if (hl_cand_rt_idx >= return_rect_stack_2[idx].length) {
+                hl_cand_ln_color = ln_color_1;
+              }
+              else {
+                hl_cand_ln_color = ln_color_2;
+              }
+            }
+          }
+        }
+
+        // Fill rectangle given opacity
+        function fill_rect(clean_rect_x, clean_rect_y, color, opacity, is_fg) {
+          ctx.fillStyle = color;
+          ctx.globalAlpha = opacity;
+          tx = clean_rect_x[0]
+          ty = clean_rect_y[0]
+          tw = clean_rect_x[2] - clean_rect_x[0]
+          th = clean_rect_y[2] - clean_rect_y[0]
+          ctx.fillRect(tx, ty, tw, th);
+          ctx.globalAlpha = 1;
+
+          // Assume we always need to draw edges or vertices when using fill_rect()
+          draw_rect(clean_rect_x, clean_rect_y, color, is_fg);
+        }
+
+        // Remove rect from stack
+        function remove_rect_from_stack(rt_idx) {
+          if (phase == 1) { return_rect_stack = return_rect_stack_1[idx]; }
+          if (phase == 2) { return_rect_stack = return_rect_stack_2[idx]; }
+
+          if (rt_idx < 0 || rt_idx >= return_rect_stack.length) {
+            alert('error removing rect from stack');
+          }
+          else {
+            return_rect_stack.splice(rt_idx, 1);
+          }
+        }
+
+
+        // Set task phase.
+        function set_phase(p) {
+          if (p == 1 || p == 2 || p ==3) {
+            phase = p;
+
+            // Reset variables
+            mouse_down = false;
+            adj_on = false;
+            adj_rt_idx = -1;
+            hl_rt = null;
+            hl_rt_idx = -1;
+          }
+          else {
+            alert('set phase error');
+          }
+          render();
+        }
+
+        function get_phase_desc() {
+          if (phase == 1) { return 'Phase 1\nPlease draw tight boxes around the bicycles being ridden.\n'; };
+          if (phase == 2) { return 'Phase 2\nPlease draw tight boxes around the people riding bicycles.\n'; };
+          if (phase == 3) { return 'Phase 3\nPlease connect the person and the bicycle(s) he is riding.\n'; };
+        }
+
+        function pad_leading_zero_3(x) {
+          return (x < 100) ? ( (x >= 10) ? ('0' + x) : ('00' + x) ) : x;
+        }
+
+        // Use the current index to update the image and description.
+        function render() {
+          // Set up the text area
+          desc = [];
+          desc = desc + get_phase_desc();
+          $('#text-area').val(desc);
+
+          // Move the cursor in the textbox to the end
+          $('#text-area').focus();
+          $('#text-area').blur();
+
+          // Refresh the counter
+          $('.counter-top').text(pad_leading_zero_3(idx + 1));
+          $('.counter-bottom').text(pad_leading_zero_3(input.length));
+
+          // If the UI is enabled, enable or disable the buttons depending on
+          // the index.
+          if (enabled) {
+            var prev_btn = $('#prev-btn');
+            var next_btn = $('#next-btn');
+            prev_btn.prop('disabled', true);
+            next_btn.prop('disabled', true);
+            if (idx > 0) {
+              prev_btn.prop('disabled', false);
+            }
+            if (idx < input.length - 1) {
+              next_btn.prop('disabled', false);
+            }
+          }
+        }
+
+        // Update the index, and save the text in the text area.
+        function set_idx(new_idx) {
+          if (new_idx < 0 || new_idx >= input.length) return;
+          // descriptions[idx] = $('#text-area').val();
+          // alert(image_width[new_idx] + 'x' + image_height[new_idx]);
+          idx = new_idx;
+          init_canvas();
+          // render();
+        }
+
+        function main(){
+          input = simpleamt.getInput(DEFAULT_INPUT);
+
+          if (!simpleamt.isPreview()) {
+            enable_hit();
+          }
+
+          // initialization
+          _.each(input, function() { return_rect_stack_1.push([]); return_rect_stack_2.push([]); });
+
+          // Preload all images
+          var imgs = [];
+          _.each(input, function(img_url) {
+            var img = new Image();
+            img.onload = function() { console.log('loaded image from ' + img_url);};
+            img.src = img_url;
+          });
+          init_canvas();
+        }
+
+        // Enable the UI.
+        function enable_hit() {
+          enabled = true;
+
+          // Enable components
+          $('#next-btn').click(function() { set_idx(idx + 1); });
+          $('#prev-btn').click(function() { set_idx(idx - 1); });
+          $('#text-area').prop('disabled', false);
+          $('#submit-btn').prop('disabled', false);
+
+          $('#phs1-btn').click(function() { set_phase(1); draw_canvas(); });
+          $('#phs2-btn').click(function() { set_phase(2); draw_canvas(); });
+          $('#phs3-btn').click(function() { set_phase(3); draw_canvas(); });
+          $('#phs1-btn').prop('disabled', false);
+          $('#phs2-btn').prop('disabled', false);
+          $('#phs3-btn').prop('disabled', false);
+
+          // Set up submit handler.
+          simpleamt.setupSubmit();
+          $('#submit-btn').click(function() {
+            // simpleamt.setOutput(output);
+          });
+        }
+
+        main();
+      });
+    </script>
+  </body>
+</html>

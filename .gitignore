@@ -4,3 +4,6 @@
 # caches
 *_hit_ids.txt
 
+# config
+config.json
+
